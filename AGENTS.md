@@ -66,12 +66,18 @@ src/
 ├── main.ts       ponto de entrada: monta renderer, controles e loop
 ├── app/          orquestração (animation loop)
 ├── engine/       WebGL: contexto, programas, renderer, (futuro) framebuffers
+├── interaction/  navegação com o mouse
+├── math/         matemática CPU-side (gêmeas de funções do shader)
 ├── shaders/      GLSL (.vert/.frag)
-├── state/        parâmetros
-└── ui/           painel, sliders, stats
+├── state/        parâmetros e paletas
+└── ui/           painel, sliders, selects, stats
 ```
 
-`math/` e `interaction/` são criadas apenas quando a primeira task precisar delas.
+### Navegação e gêmeas na CPU
+
+- A navegação (`src/interaction/viewNavigation.ts`) mantém fixo o ponto do fractal sob o cursor. Para isso, `fractalPointAt()` reproduz na CPU o mapeamento pixel → plano do fractal do shader.
+- Toda etapa do shader que entra nesse mapeamento (hoje `kaleidoscope`) tem uma **gêmea em `src/math/`**, com testes. **Ao mudar a função no shader, mude a gêmea junto** — senão o zoom deixa de ficar ancorado no cursor.
+- Mudanças vindas de fora dos sliders passam por `clampParam()` para manter os valores dentro das faixas.
 
 ### Parâmetros
 
@@ -79,7 +85,7 @@ src/
 - Presets, URL, seed e mutação operarão sobre esse objeto. Grupos do painel são só apresentação (`src/ui/ControlsPanel.ts`).
 - Os sliders escrevem direto em `params`; o renderer lê a cada frame. Não crie store/eventos até existir necessidade real.
 - Para adicionar um parâmetro: `Params` + `PARAM_SPECS` + `DEFAULT_PARAMS` → uniform no shader → `UNIFORM_NAMES` e `render()` em `Renderer.ts` (mapeamento explícito, sem sistema genérico de uniforms) → chave em um grupo do painel.
-- Faixas iniciais seguem `FRACTAL_MATH_ENGINE.md` §34.
+- Faixas iniciais seguem `FRACTAL_MATH_ENGINE.md` §34; zoom (até 2000) e iterações (até 1024) foram ampliados para os zooms profundos da navegação.
 - Escolhas discretas (ex.: paleta) são índices numéricos com `options` no spec; o painel mostra um `<select>`. Liga/desliga usa o mesmo mecanismo: valor 0/1 com `options: ['Off', 'On']`.
 
 ### Animação
@@ -101,7 +107,7 @@ src/
 
 - Sempre considere: custo por pixel, iterações, resolução interna, leituras de textura, número de passes, loops no fragment shader.
 - A resolução do drawing buffer é limitada a 2× (`MAX_PIXEL_RATIO`). Resolução interna reduzida durante interação é permitida quando for necessária.
-- Referência: manter 60 fps em GPU integrada (Intel UHD 730 a 1280×860 com 256 iterações).
+- Referência: manter 60 fps em GPU integrada (Intel UHD 730 a 1280×860) com os valores padrão e até 256 iterações. O máximo de 1024 iterações existe para zooms profundos e pode cair para ~37 fps — é escolha do usuário.
 - Não otimize prematuramente, mas não escolha soluções obviamente caras.
 
 ## 8. Debug

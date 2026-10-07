@@ -93,6 +93,12 @@ body {
   display: block;
   width: 100%;
   height: 100%;
+  cursor: grab;
+  touch-action: none; /* dragging pans the fractal instead of scrolling the page */
+}
+
+.viewport canvas.dragging {
+  cursor: grabbing;
 }
 
 .fatal-error {

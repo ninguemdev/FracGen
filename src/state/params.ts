@@ -45,12 +45,14 @@ export interface ParamSpec {
 }
 
 export const PARAM_SPECS: Record<ParamKey, ParamSpec> = {
-  iterations: { label: 'Iterations', min: 32, max: 256, step: 1 },
+  // Deep zooms need the high end; the cost per pixel grows linearly with it.
+  iterations: { label: 'Iterations', min: 32, max: 1024, step: 1 },
   juliaX: { label: 'Julia X', min: -1.5, max: 1.5, step: 0.001 },
   juliaY: { label: 'Julia Y', min: -1.5, max: 1.5, step: 0.001 },
-  zoom: { label: 'Zoom', min: 0.2, max: 20, step: 0.01, logarithmic: true },
-  positionX: { label: 'Position X', min: -1.5, max: 1.5, step: 0.001 },
-  positionY: { label: 'Position Y', min: -1.5, max: 1.5, step: 0.001 },
+  // Beyond ~2000 the shader's float32 coordinates start to show as blocky pixels.
+  zoom: { label: 'Zoom', min: 0.2, max: 2000, step: 0.01, logarithmic: true },
+  positionX: { label: 'Position X', min: -1.5, max: 1.5, step: 0.0001 },
+  positionY: { label: 'Position Y', min: -1.5, max: 1.5, step: 0.0001 },
 
   // Whole numbers only: a fractional sector count leaves a seam where the sectors don't close.
   symmetrySides: { label: 'Sides', min: 1, max: 16, step: 1 },
@@ -91,3 +93,9 @@ export const DEFAULT_PARAMS: Readonly<Params> = {
   brightness: 1,
   contrast: 1,
 };
+
+/** Limits a value to the parameter's range, for changes that don't come from its slider. */
+export function clampParam(key: ParamKey, value: number): number {
+  const { min, max } = PARAM_SPECS[key];
+  return Math.min(max, Math.max(min, value));
+}

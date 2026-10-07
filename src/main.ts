@@ -1,6 +1,7 @@
 import './style.css';
 import { startAnimationLoop } from './app/animationLoop';
 import { Renderer } from './engine/Renderer';
+import { attachViewNavigation } from './interaction/viewNavigation';
 import { DEFAULT_PARAMS, type Params } from './state/params';
 import { ControlsPanel } from './ui/ControlsPanel';
 import { StatsDisplay } from './ui/StatsDisplay';
@@ -19,6 +20,8 @@ function start(): void {
 
   const params: Params = { ...DEFAULT_PARAMS };
   const controls = new ControlsPanel(getElement('#controls'), params);
+
+  attachViewNavigation(canvas, params, () => controls.refresh());
 
   getElement('#reset').addEventListener('click', () => {
     Object.assign(params, DEFAULT_PARAMS);

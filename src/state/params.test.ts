@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_PARAMS, PARAM_SPECS, type ParamKey } from './params';
+import { clampParam, DEFAULT_PARAMS, PARAM_SPECS, type ParamKey } from './params';
 
 const keys = Object.keys(PARAM_SPECS) as ParamKey[];
 
@@ -27,5 +27,12 @@ describe('params', () => {
     expect(max).toBe(options.length - 1);
     expect(step).toBe(1);
     expect(Number.isInteger(DEFAULT_PARAMS[key])).toBe(true);
+  });
+
+  it('clamps values to the parameter range', () => {
+    const { min, max } = PARAM_SPECS.zoom;
+    expect(clampParam('zoom', min / 2)).toBe(min);
+    expect(clampParam('zoom', max * 2)).toBe(max);
+    expect(clampParam('zoom', 1.5)).toBe(1.5);
   });
 });

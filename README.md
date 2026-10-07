@@ -42,6 +42,7 @@ O desenvolvimento acontece em tasks pequenas, uma fase por vez.
 - [x] 2. Julia Set com parâmetros interativos
 - [x] 3. Coloração — paleta, frequência, fase, contraste, color cycle
 - [x] 4. Caleidoscópio — coordenadas polares, repetição angular, espelhamento
+- [x] 4.1 Navegação — arrastar para mover, roda do mouse para zoom no cursor
 - [ ] 5. Domain warp
 - [ ] 6. Feedback temporal (ping-pong framebuffers)
 - [ ] 7. Interação com o mouse — attractor, twist, brush
@@ -65,6 +66,12 @@ O conteúdo de `dist/` pode ser hospedado em qualquer servidor estático (os cam
 
 Navegadores alvo: Chrome, Edge e Firefox de desktop com WebGL 2.
 
+## Uso
+
+- **Arrastar** o canvas move a imagem; a **roda do mouse** dá zoom mantendo fixo o ponto sob o cursor (também com o caleidoscópio ativo).
+- Os sliders do painel mostram e ajustam os mesmos valores; **Reset** volta à configuração inicial.
+- Em zooms profundos, aumente **Iterations**: regiões pretas costumam ser pontos que ainda não escaparam, não o interior do conjunto.
+
 ## Stack
 
 Vite, TypeScript, WebGL 2 e GLSL — sem framework de UI e sem dependências de runtime. Os shaders ficam em arquivos `.vert`/`.frag` e são importados como texto (`?raw`).
@@ -77,12 +84,12 @@ src/
 ├── style.css
 ├── app/                 orquestração (animation loop)
 ├── engine/              WebGL: contexto, programas, renderer
+├── interaction/         navegação com o mouse (arrastar, zoom)
+├── math/                matemática CPU-side (gêmeas de funções do shader)
 ├── shaders/             GLSL
 ├── state/               parâmetros (valores padrão e faixas) e paletas
 └── ui/                  painel de controles, sliders, stats
 ```
-
-Novas pastas (`math/`, `interaction/`) surgem quando a primeira task precisar delas.
 
 ## Parâmetros
 
