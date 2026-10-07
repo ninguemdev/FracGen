@@ -69,7 +69,7 @@ Navegadores alvo: Chrome, Edge e Firefox de desktop com WebGL 2.
 ## Uso
 
 - **Arrastar** o canvas move a imagem; a **roda do mouse** dá zoom mantendo fixo o ponto sob o cursor (também com o caleidoscópio ativo).
-- Os sliders do painel mostram e ajustam os mesmos valores; **Reset** volta à configuração inicial.
+- Os sliders do painel mostram e ajustam os mesmos valores. O **Reset** do topo volta tudo à configuração inicial; o **Reset** no título de cada grupo volta só aquele grupo.
 - Em zooms profundos, aumente **Iterations**: regiões pretas costumam ser pontos que ainda não escaparam, não o interior do conjunto.
 - **Feedback** mistura cada frame com o anterior: **Amount** define quanto do frame anterior permanece (0 desliga), **Zoom** o amplia (> 1 flui para fora, < 1 para o centro) e **Rotation** o gira a cada frame. Os valores são por frame a 60 fps e se ajustam à taxa real, então o efeito tem a mesma velocidade em qualquer monitor.
 

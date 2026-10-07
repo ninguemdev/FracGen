@@ -3,7 +3,7 @@ import { startAnimationLoop } from './app/animationLoop';
 import { Renderer } from './engine/Renderer';
 import { attachViewNavigation } from './interaction/viewNavigation';
 import { advanceAnimation, createAnimation } from './state/animation';
-import { DEFAULT_PARAMS, type Params } from './state/params';
+import { DEFAULT_PARAMS, resetParams, type Params } from './state/params';
 import { ControlsPanel } from './ui/ControlsPanel';
 import { StatsDisplay } from './ui/StatsDisplay';
 
@@ -26,7 +26,7 @@ function start(): void {
   attachViewNavigation(canvas, params, animation, () => controls.refresh());
 
   getElement('#reset').addEventListener('click', () => {
-    Object.assign(params, DEFAULT_PARAMS);
+    resetParams(params);
     controls.refresh();
   });
 

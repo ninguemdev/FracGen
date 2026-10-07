@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clampParam, DEFAULT_PARAMS, PARAM_SPECS, type ParamKey } from './params';
+import { clampParam, DEFAULT_PARAMS, PARAM_SPECS, resetParams, type ParamKey, type Params } from './params';
 
 const keys = Object.keys(PARAM_SPECS) as ParamKey[];
 
@@ -27,6 +27,18 @@ describe('params', () => {
     expect(max).toBe(options.length - 1);
     expect(step).toBe(1);
     expect(Number.isInteger(DEFAULT_PARAMS[key])).toBe(true);
+  });
+
+  it('resets only the given parameters', () => {
+    const params: Params = { ...DEFAULT_PARAMS, zoom: 5, warpStrength: 0.7, contrast: 1.5 };
+    resetParams(params, ['zoom', 'warpStrength']);
+    expect(params).toEqual({ ...DEFAULT_PARAMS, contrast: 1.5 });
+  });
+
+  it('resets every parameter by default', () => {
+    const params: Params = { ...DEFAULT_PARAMS, zoom: 5, palette: 3, feedbackAmount: 0.9 };
+    resetParams(params);
+    expect(params).toEqual(DEFAULT_PARAMS);
   });
 
   it('clamps values to the parameter range', () => {

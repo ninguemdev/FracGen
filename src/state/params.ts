@@ -133,6 +133,13 @@ export const DEFAULT_PARAMS: Readonly<Params> = {
   contrast: 1,
 };
 
+const PARAM_KEYS = Object.keys(PARAM_SPECS) as ParamKey[];
+
+/** Puts the given parameters, or all of them, back to their defaults. */
+export function resetParams(params: Params, keys: readonly ParamKey[] = PARAM_KEYS): void {
+  for (const key of keys) params[key] = DEFAULT_PARAMS[key];
+}
+
 /** Limits a value to the parameter's range, for changes that don't come from its slider. */
 export function clampParam(key: ParamKey, value: number): number {
   const { min, max } = PARAM_SPECS[key];
