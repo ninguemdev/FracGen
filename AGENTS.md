@@ -69,8 +69,8 @@ src/
 ├── interaction/  mouse: navegação e brush
 ├── math/         matemática CPU-side (gêmeas de funções do shader)
 ├── shaders/      GLSL (.vert/.frag)
-├── state/        parâmetros e paletas
-└── ui/           painel, sliders, selects, stats
+├── state/        parâmetros, paletas e presets
+└── ui/           painel, presets, sliders, selects, stats
 ```
 
 ### Navegação e gêmeas na CPU
@@ -82,7 +82,8 @@ src/
 ### Parâmetros
 
 - Todo valor controlável vive em **um único objeto plano** `Params` em `src/state/params.ts`, com `PARAM_SPECS` (rótulo, faixa, passo, escala log) e `DEFAULT_PARAMS`.
-- Presets, URL, seed e mutação operarão sobre esse objeto. Grupos do painel são só apresentação (`src/ui/ControlsPanel.ts`).
+- Presets, URL, seed e mutação operam sobre esse objeto. Grupos do painel são só apresentação (`src/ui/ControlsPanel.ts`).
+- Um preset (`src/state/presets.ts`) é um `Params` parcial: `applyPreset()` volta ao padrão tudo o que ele não define, exceto o brush, que é ferramenta e não visual. Ao aplicar, as fases de `Animation` recomeçam do zero, para o preset abrir exatamente como foi desenhado.
 - Os sliders escrevem direto em `params`; o renderer lê a cada frame. Não crie store/eventos até existir necessidade real.
 - Para adicionar um parâmetro: `Params` + `PARAM_SPECS` + `DEFAULT_PARAMS` → uniform no shader → `UNIFORM_NAMES` e os métodos `set…Uniforms()` em `Renderer.ts` (mapeamento explícito, sem sistema genérico de uniforms) → chave em um grupo do painel.
 - Faixas iniciais seguem `FRACTAL_MATH_ENGINE.md` §34; zoom (até 2000) e iterações (até 1024) foram ampliados para os zooms profundos da navegação.

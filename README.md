@@ -46,7 +46,7 @@ O desenvolvimento acontece em tasks pequenas, uma fase por vez.
 - [x] 5. Domain warp — oitavas compostas, warp rotacional, animação
 - [x] 6. Feedback temporal — ping-pong framebuffers, amount, zoom e rotation
 - [x] 7. Interação com o mouse — brush com attract, repel e twist
-- [ ] 8. Presets
+- [x] 8. Presets — 10 pontos de partida no topo do painel
 - [ ] 8.1 Buraco negro — preset em que as estruturas convergem para o centro numa animação de buraco negro, com horizonte de eventos
 - [ ] 9. Estado na URL — seed + parâmetros
 - [ ] 10. Exportação PNG
@@ -74,6 +74,7 @@ Navegadores alvo: Chrome, Edge e Firefox de desktop com WebGL 2.
 
 - **Arrastar** o canvas move a imagem (botão esquerdo com o Brush em Off; botão direito sempre); a **roda do mouse** dá zoom mantendo fixo o ponto sob o cursor (também com o caleidoscópio ativo).
 - **Brush** (grupo Interaction): escolha um modo e segure o botão esquerdo sobre o canvas. **Attract** puxa a imagem para o cursor, **Repel** a afasta e **Twist** a gira em torno dele; **Radius** e **Strength** definem o alcance e a intensidade. Com o caleidoscópio, o brush age em todos os setores; com feedback, deixa rastros.
+- **Presets**, no topo do painel, carregam uma configuração completa como ponto de partida; o brush continua como estava.
 - Os sliders do painel mostram e ajustam os mesmos valores. O **Reset** do topo volta tudo à configuração inicial; o **Reset** no título de cada grupo volta só aquele grupo.
 - Em zooms profundos, aumente **Iterations**: regiões pretas costumam ser pontos que ainda não escaparam, não o interior do conjunto.
 - **Feedback** mistura cada frame com o anterior: **Amount** define quanto do frame anterior permanece (0 desliga), **Zoom** o amplia (> 1 flui para fora, < 1 para o centro) e **Rotation** o gira a cada frame. Os valores são por frame a 60 fps e se ajustam à taxa real, então o efeito tem a mesma velocidade em qualquer monitor.
@@ -93,13 +94,13 @@ src/
 ├── interaction/         mouse: navegação (arrastar, zoom) e brush
 ├── math/                matemática CPU-side (gêmeas de funções do shader)
 ├── shaders/             GLSL
-├── state/               parâmetros (valores padrão e faixas) e paletas
-└── ui/                  painel de controles, sliders, stats
+├── state/               parâmetros (valores padrão e faixas), paletas e presets
+└── ui/                  painel de controles, presets, sliders, stats
 ```
 
 ## Parâmetros
 
-Todo valor controlável fica em um único objeto plano, `Params` (`src/state/params.ts`), com faixa e passo definidos em `PARAM_SPECS`. Os sliders escrevem diretamente nesse objeto e o renderer o lê a cada frame. Presets, estado na URL e mutação vão operar sobre ele; os grupos do painel (Fractal, Warp, Color…) são apenas apresentação, definidos em `src/ui/ControlsPanel.ts`.
+Todo valor controlável fica em um único objeto plano, `Params` (`src/state/params.ts`), com faixa e passo definidos em `PARAM_SPECS`. Os sliders escrevem diretamente nesse objeto e o renderer o lê a cada frame. Os presets (`src/state/presets.ts`) operam sobre ele, e estado na URL e mutação também vão operar; os grupos do painel (Fractal, Warp, Color…) são apenas apresentação, definidos em `src/ui/ControlsPanel.ts`.
 
 Para adicionar um parâmetro: campo em `Params` + `PARAM_SPECS` + `DEFAULT_PARAMS`, uniform no shader e em `Renderer.ts`, e a chave em um grupo do painel.
 

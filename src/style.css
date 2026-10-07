@@ -127,6 +127,34 @@ body {
   margin-top: 18px;
 }
 
+.presets {
+  margin-bottom: 18px;
+}
+
+.preset-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.preset-button {
+  overflow: hidden;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  font: 11px system-ui, sans-serif;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.preset-button:hover {
+  border-color: var(--accent);
+}
+
 .control-group-header {
   display: flex;
   align-items: center;

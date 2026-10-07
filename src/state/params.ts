@@ -151,7 +151,7 @@ export const DEFAULT_PARAMS: Readonly<Params> = {
   brushStrength: 0.6,
 };
 
-const PARAM_KEYS = Object.keys(PARAM_SPECS) as ParamKey[];
+export const PARAM_KEYS = Object.keys(PARAM_SPECS) as ParamKey[];
 
 /** Puts the given parameters, or all of them, back to their defaults. */
 export function resetParams(params: Params, keys: readonly ParamKey[] = PARAM_KEYS): void {

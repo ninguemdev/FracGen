@@ -6,7 +6,9 @@ import { attachViewNavigation } from './interaction/viewNavigation';
 import { advanceAnimation, createAnimation } from './state/animation';
 import { advanceBrush, createBrush } from './state/brush';
 import { DEFAULT_PARAMS, resetParams, type Params } from './state/params';
+import { applyPreset, PRESETS } from './state/presets';
 import { ControlsPanel } from './ui/ControlsPanel';
+import { createPresetList } from './ui/presetList';
 import { StatsDisplay } from './ui/StatsDisplay';
 
 try {
@@ -24,7 +26,16 @@ function start(): void {
   const params: Params = { ...DEFAULT_PARAMS };
   const animation = createAnimation();
   const brush = createBrush();
-  const controls = new ControlsPanel(getElement('#controls'), params);
+  const controls = new ControlsPanel(getElement('#parameters'), params);
+
+  getElement('#presets').append(
+    createPresetList(PRESETS, (preset) => {
+      applyPreset(params, preset);
+      // Restarting the animation phases opens the preset exactly as it was designed.
+      Object.assign(animation, createAnimation());
+      controls.refresh();
+    }),
+  );
 
   attachViewNavigation(canvas, params, animation, brush, () => controls.refresh());
   attachBrushInput(canvas, params, brush);
