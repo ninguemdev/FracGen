@@ -80,7 +80,7 @@ src/
 - Os sliders escrevem direto em `params`; o renderer lê a cada frame. Não crie store/eventos até existir necessidade real.
 - Para adicionar um parâmetro: `Params` + `PARAM_SPECS` + `DEFAULT_PARAMS` → uniform no shader → `UNIFORM_NAMES` e `render()` em `Renderer.ts` (mapeamento explícito, sem sistema genérico de uniforms) → chave em um grupo do painel.
 - Faixas iniciais seguem `FRACTAL_MATH_ENGINE.md` §34.
-- Escolhas discretas (ex.: paleta) são índices numéricos com `options` no spec; o painel mostra um `<select>`.
+- Escolhas discretas (ex.: paleta) são índices numéricos com `options` no spec; o painel mostra um `<select>`. Liga/desliga usa o mesmo mecanismo: valor 0/1 com `options: ['Off', 'On']`.
 
 ### Animação
 

@@ -41,7 +41,7 @@ O desenvolvimento acontece em tasks pequenas, uma fase por vez.
 - [x] 1. Fundação — WebGL 2, fullscreen pass, animation loop, resize
 - [x] 2. Julia Set com parâmetros interativos
 - [x] 3. Coloração — paleta, frequência, fase, contraste, color cycle
-- [ ] 4. Caleidoscópio — coordenadas polares, repetição angular, espelhamento
+- [x] 4. Caleidoscópio — coordenadas polares, repetição angular, espelhamento
 - [ ] 5. Domain warp
 - [ ] 6. Feedback temporal (ping-pong framebuffers)
 - [ ] 7. Interação com o mouse — attractor, twist, brush

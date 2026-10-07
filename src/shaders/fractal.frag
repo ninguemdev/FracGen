@@ -7,7 +7,10 @@ uniform vec2 uCenter;
 uniform vec2 uJuliaC;
 uniform int uIterations;
 
-uniform vec3 uPalette[4];      // cosine palette coefficients a, b, c, d
+uniform float uSymmetrySides;
+uniform bool uSymmetryMirror;
+
+uniform vec3 uPalette[4];     // cosine palette coefficients a, b, c, d
 uniform float uColorFrequency; // palette cycles per escape iteration
 uniform float uColorOffset;    // phase + accumulated color cycle, in palette cycles
 uniform float uContrast;
@@ -26,6 +29,20 @@ const float ESCAPE_RADIUS = 16.0;
 // (FRACTAL_MATH_ENGINE.md §2).
 vec2 pixelToWorld(vec2 pixel) {
     return (2.0 * pixel - uResolution) / uResolution.y;
+}
+
+// Kaleidoscope fold (FRACTAL_MATH_ENGINE.md §5). The plane is cut into `sides` angular
+// sectors centred on the +x axis and every sector is mapped onto that first one: N-fold
+// rotational repetition. Mirroring also reflects each sector about its centre line, giving
+// the 2N alternating wedges of a kaleidoscope with no seams between neighbours.
+vec2 kaleidoscope(vec2 p, float sides, bool mirrored) {
+    if (sides < 2.0) return p;
+
+    float sector = TAU / sides;
+    // Shifting by half a sector before the mod centres each sector on angle 0.
+    float angle = mod(atan(p.y, p.x) + 0.5 * sector, sector) - 0.5 * sector;
+    if (mirrored) angle = abs(angle);
+    return length(p) * vec2(cos(angle), sin(angle));
 }
 
 // (x + iy)² = x² − y² + 2xy·i
@@ -67,7 +84,10 @@ vec3 adjustColor(vec3 color) {
 }
 
 void main() {
-    vec2 z = pixelToWorld(gl_FragCoord.xy) / uZoom + uCenter;
+    // The fold happens before the translation: the symmetry stays centred on screen and
+    // Position slides the fractal underneath the mirrors, like turning a kaleidoscope.
+    vec2 p = kaleidoscope(pixelToWorld(gl_FragCoord.xy) / uZoom, uSymmetrySides, uSymmetryMirror);
+    vec2 z = p + uCenter;
     float escape = juliaSmoothEscape(z, uJuliaC);
 
     // fwidth is taken outside any branch: derivatives need t from every pixel of the 2×2 quad.

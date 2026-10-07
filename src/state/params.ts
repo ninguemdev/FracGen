@@ -12,6 +12,11 @@ export interface Params {
   positionX: number;
   positionY: number;
 
+  /** Number of angular sectors; 1 means no symmetry. */
+  symmetrySides: number;
+  /** 1 reflects every sector about its centre line (kaleidoscope); 0 only repeats it. */
+  symmetryMirror: number;
+
   /** Index into PALETTES. */
   palette: number;
   /** Palette cycles per escape iteration. */
@@ -47,6 +52,10 @@ export const PARAM_SPECS: Record<ParamKey, ParamSpec> = {
   positionX: { label: 'Position X', min: -1.5, max: 1.5, step: 0.001 },
   positionY: { label: 'Position Y', min: -1.5, max: 1.5, step: 0.001 },
 
+  // Whole numbers only: a fractional sector count leaves a seam where the sectors don't close.
+  symmetrySides: { label: 'Sides', min: 1, max: 16, step: 1 },
+  symmetryMirror: { label: 'Mirror', min: 0, max: 1, step: 1, options: ['Off', 'On'] },
+
   palette: {
     label: 'Palette',
     min: 0,
@@ -70,6 +79,9 @@ export const DEFAULT_PARAMS: Readonly<Params> = {
   zoom: 0.8,
   positionX: 0,
   positionY: 0,
+
+  symmetrySides: 1,
+  symmetryMirror: 1,
 
   palette: 0,
   colorFrequency: 0.04,

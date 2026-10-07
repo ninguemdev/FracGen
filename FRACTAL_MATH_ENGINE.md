@@ -217,6 +217,14 @@ Valores interessantes:
 
 Valores não inteiros também podem produzir deformações interessantes se tratados adequadamente.
 
+**Nota de implementação.** No shader, a dobra acontece **depois do zoom e antes da translação** (`position`), e não depois de `T` completo como em §29/§42:
+
+```text
+p = kaleidoscope(pixel / zoom) + position
+```
+
+Assim o centro de simetria fica fixo no centro da tela e `position` desliza o fractal "por baixo dos espelhos", como girar um caleidoscópio — cada movimento gera um padrão novo. Com `position = 0` as duas ordens são equivalentes. Os setores são centrados no eixo +x, `N = 1` desliga a simetria, e só valores inteiros são usados por enquanto (um `N` fracionário deixa uma costura onde os setores não fecham). Sem espelhamento, o resultado é apenas repetição rotacional (simetria de ordem N).
+
 ---
 
 # 6. Spiral Transform

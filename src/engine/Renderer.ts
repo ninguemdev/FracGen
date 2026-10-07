@@ -13,6 +13,8 @@ const UNIFORM_NAMES = [
   'uCenter',
   'uJuliaC',
   'uIterations',
+  'uSymmetrySides',
+  'uSymmetryMirror',
   'uPalette',
   'uColorFrequency',
   'uColorOffset',
@@ -55,6 +57,9 @@ export class Renderer {
     gl.uniform2f(uniforms.uCenter, params.positionX, params.positionY);
     gl.uniform2f(uniforms.uJuliaC, params.juliaX, params.juliaY);
     gl.uniform1i(uniforms.uIterations, params.iterations);
+
+    gl.uniform1f(uniforms.uSymmetrySides, params.symmetrySides);
+    gl.uniform1i(uniforms.uSymmetryMirror, params.symmetryMirror);
 
     gl.uniform3fv(uniforms.uPalette, PALETTES[params.palette].coefficients);
     gl.uniform1f(uniforms.uColorFrequency, params.colorFrequency);
