@@ -47,8 +47,12 @@ O desenvolvimento acontece em tasks pequenas, uma fase por vez.
 - [x] 6. Feedback temporal — ping-pong framebuffers, amount, zoom e rotation
 - [x] 7. Interação com o mouse — brush com attract, repel e twist
 - [ ] 8. Presets
+- [ ] 8.1 Buraco negro — preset em que as estruturas convergem para o centro numa animação de buraco negro, com horizonte de eventos
 - [ ] 9. Estado na URL — seed + parâmetros
 - [ ] 10. Exportação PNG
+- [ ] 11. Zoom infinito — zoom profundo além do limite de precisão atual (~2000×), otimizado e eficiente
+- [ ] 12. Animação de zoom contínuo
+- [ ] 13. Exportação GIF — incluindo um zoom em loop que avança até o fractal ficar idêntico ao início, gerando um GIF "infinito"
 
 ## Executar
 
