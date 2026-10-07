@@ -145,6 +145,22 @@ body {
   accent-color: var(--accent);
 }
 
+.select {
+  display: grid;
+  grid-template-columns: 1fr 60%;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.select select {
+  padding: 3px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
 /* Mobile is secondary: stack the panel under the canvas. */
 @media (max-width: 700px) {
   .workspace {

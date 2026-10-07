@@ -20,4 +20,12 @@ describe('params', () => {
     expect(step).toBeGreaterThan(0);
     if (logarithmic) expect(min).toBeGreaterThan(0);
   });
+
+  it.each(keys.filter((key) => PARAM_SPECS[key].options))('%s indexes exactly its options', (key) => {
+    const { min, max, step, options = [] } = PARAM_SPECS[key];
+    expect(min).toBe(0);
+    expect(max).toBe(options.length - 1);
+    expect(step).toBe(1);
+    expect(Number.isInteger(DEFAULT_PARAMS[key])).toBe(true);
+  });
 });

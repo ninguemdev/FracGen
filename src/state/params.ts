@@ -1,3 +1,5 @@
+import { PALETTES } from './palettes';
+
 /**
  * Every user-controllable value lives in this single flat object. Presets, URL state and
  * mutation will all operate on it, so new parameters are added here first.
@@ -9,6 +11,18 @@ export interface Params {
   zoom: number;
   positionX: number;
   positionY: number;
+
+  /** Index into PALETTES. */
+  palette: number;
+  /** Palette cycles per escape iteration. */
+  colorFrequency: number;
+  /** Palette offset, in cycles. */
+  colorPhase: number;
+  /** Palette cycles per second. */
+  colorCycle: number;
+  saturation: number;
+  brightness: number;
+  contrast: number;
 }
 
 export type ParamKey = keyof Params;
@@ -21,6 +35,8 @@ export interface ParamSpec {
   step: number;
   /** Equal slider distances multiply the value by equal factors (for ranges spanning decades). */
   logarithmic?: boolean;
+  /** Discrete choice: the value is an index into these labels. */
+  options?: readonly string[];
 }
 
 export const PARAM_SPECS: Record<ParamKey, ParamSpec> = {
@@ -30,6 +46,20 @@ export const PARAM_SPECS: Record<ParamKey, ParamSpec> = {
   zoom: { label: 'Zoom', min: 0.2, max: 20, step: 0.01, logarithmic: true },
   positionX: { label: 'Position X', min: -1.5, max: 1.5, step: 0.001 },
   positionY: { label: 'Position Y', min: -1.5, max: 1.5, step: 0.001 },
+
+  palette: {
+    label: 'Palette',
+    min: 0,
+    max: PALETTES.length - 1,
+    step: 1,
+    options: PALETTES.map((palette) => palette.name),
+  },
+  colorFrequency: { label: 'Frequency', min: 0.005, max: 0.5, step: 0.001, logarithmic: true },
+  colorPhase: { label: 'Phase', min: 0, max: 1, step: 0.001 },
+  colorCycle: { label: 'Color Cycle', min: -0.5, max: 0.5, step: 0.005 },
+  saturation: { label: 'Saturation', min: 0, max: 2, step: 0.01 },
+  brightness: { label: 'Brightness', min: 0, max: 2, step: 0.01 },
+  contrast: { label: 'Contrast', min: 0, max: 2, step: 0.01 },
 };
 
 export const DEFAULT_PARAMS: Readonly<Params> = {
@@ -40,4 +70,12 @@ export const DEFAULT_PARAMS: Readonly<Params> = {
   zoom: 0.8,
   positionX: 0,
   positionY: 0,
+
+  palette: 0,
+  colorFrequency: 0.04,
+  colorPhase: 0.38,
+  colorCycle: 0.03,
+  saturation: 1,
+  brightness: 1,
+  contrast: 1,
 };

@@ -25,8 +25,13 @@ function start(): void {
     controls.refresh();
   });
 
-  startAnimationLoop((time) => {
-    renderer.render(time, params);
+  // Integrated frame by frame rather than computed as speed × elapsed time,
+  // so changing the Color Cycle speed never makes the palette jump.
+  let colorCycleOffset = 0;
+
+  startAnimationLoop((deltaTime) => {
+    colorCycleOffset += params.colorCycle * deltaTime;
+    renderer.render(params, colorCycleOffset);
     stats.update(canvas.width, canvas.height);
   });
 }

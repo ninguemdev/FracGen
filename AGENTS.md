@@ -80,6 +80,13 @@ src/
 - Os sliders escrevem direto em `params`; o renderer lê a cada frame. Não crie store/eventos até existir necessidade real.
 - Para adicionar um parâmetro: `Params` + `PARAM_SPECS` + `DEFAULT_PARAMS` → uniform no shader → `UNIFORM_NAMES` e `render()` em `Renderer.ts` (mapeamento explícito, sem sistema genérico de uniforms) → chave em um grupo do painel.
 - Faixas iniciais seguem `FRACTAL_MATH_ENGINE.md` §34.
+- Escolhas discretas (ex.: paleta) são índices numéricos com `options` no spec; o painel mostra um `<select>`.
+
+### Animação
+
+- O animation loop entrega `deltaTime` (segundos desde o frame anterior, limitado após a aba ficar oculta).
+- Parâmetros de velocidade são **integrados frame a frame** (`offset += speed × deltaTime`), nunca calculados como `speed × tempoTotal` — senão mover o slider de velocidade faz a imagem saltar.
+- Esses offsets acumulados são estado de execução, não parâmetros: não entram em `Params`, presets nem URL.
 
 ## 6. Shaders
 

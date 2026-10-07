@@ -1,14 +1,24 @@
 import { PARAM_SPECS, type ParamKey, type Params } from '../state/params';
+import { Select } from './Select';
 import { Slider } from './Slider';
+
+interface Control {
+  readonly element: HTMLElement;
+  setValue(value: number): void;
+}
 
 const GROUPS: { title: string; keys: ParamKey[] }[] = [
   { title: 'Fractal', keys: ['iterations', 'juliaX', 'juliaY', 'zoom', 'positionX', 'positionY'] },
+  {
+    title: 'Color',
+    keys: ['palette', 'colorFrequency', 'colorPhase', 'colorCycle', 'saturation', 'brightness', 'contrast'],
+  },
 ];
 
-/** One slider per parameter, grouped; moving a slider writes straight into `params`. */
+/** One control per parameter, grouped; changing a control writes straight into `params`. */
 export class ControlsPanel {
   private readonly params: Params;
-  private readonly sliders: [ParamKey, Slider][] = [];
+  private readonly controls: [ParamKey, Control][] = [];
 
   constructor(container: HTMLElement, params: Params) {
     this.params = params;
@@ -19,7 +29,7 @@ export class ControlsPanel {
 
   /** Shows the current values again after `params` changed elsewhere (e.g. reset). */
   refresh(): void {
-    for (const [key, slider] of this.sliders) slider.setValue(this.params[key]);
+    for (const [key, control] of this.controls) control.setValue(this.params[key]);
   }
 
   private createGroup(title: string, keys: ParamKey[]): HTMLElement {
@@ -32,12 +42,20 @@ export class ControlsPanel {
     section.append(heading);
 
     for (const key of keys) {
-      const slider = new Slider(PARAM_SPECS[key], this.params[key], (value) => {
-        this.params[key] = value;
-      });
-      this.sliders.push([key, slider]);
-      section.append(slider.element);
+      const control = this.createControl(key);
+      this.controls.push([key, control]);
+      section.append(control.element);
     }
     return section;
+  }
+
+  private createControl(key: ParamKey): Control {
+    const spec = PARAM_SPECS[key];
+    const onInput = (value: number) => {
+      this.params[key] = value;
+    };
+    return spec.options
+      ? new Select(spec.label, spec.options, this.params[key], onInput)
+      : new Slider(spec, this.params[key], onInput);
   }
 }
