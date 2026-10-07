@@ -1,8 +1,10 @@
 import './style.css';
 import { startAnimationLoop } from './app/animationLoop';
 import { Renderer } from './engine/Renderer';
+import { attachBrushInput } from './interaction/brushInput';
 import { attachViewNavigation } from './interaction/viewNavigation';
 import { advanceAnimation, createAnimation } from './state/animation';
+import { advanceBrush, createBrush } from './state/brush';
 import { DEFAULT_PARAMS, resetParams, type Params } from './state/params';
 import { ControlsPanel } from './ui/ControlsPanel';
 import { StatsDisplay } from './ui/StatsDisplay';
@@ -21,9 +23,11 @@ function start(): void {
 
   const params: Params = { ...DEFAULT_PARAMS };
   const animation = createAnimation();
+  const brush = createBrush();
   const controls = new ControlsPanel(getElement('#controls'), params);
 
-  attachViewNavigation(canvas, params, animation, () => controls.refresh());
+  attachViewNavigation(canvas, params, animation, brush, () => controls.refresh());
+  attachBrushInput(canvas, params, brush);
 
   getElement('#reset').addEventListener('click', () => {
     resetParams(params);
@@ -32,7 +36,8 @@ function start(): void {
 
   startAnimationLoop((deltaTime) => {
     advanceAnimation(animation, params, deltaTime);
-    renderer.render(params, animation, deltaTime);
+    advanceBrush(brush, deltaTime);
+    renderer.render(params, animation, brush, deltaTime);
     stats.update(canvas.width, canvas.height);
   });
 }

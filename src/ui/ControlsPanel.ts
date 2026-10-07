@@ -16,6 +16,7 @@ const GROUPS: { title: string; keys: ParamKey[] }[] = [
     title: 'Color',
     keys: ['palette', 'colorFrequency', 'colorPhase', 'colorCycle', 'saturation', 'brightness', 'contrast'],
   },
+  { title: 'Interaction', keys: ['brushMode', 'brushRadius', 'brushStrength'] },
 ];
 
 /** One control per parameter, grouped; changing a control writes straight into `params`. */

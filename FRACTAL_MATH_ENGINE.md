@@ -702,6 +702,8 @@ d_x
 \end{bmatrix}
 \]
 
+**Nota de implementação.** O brush é um efeito de lente: entra depois do caleidoscópio e antes do warp, `p = W(B(K(pixel)))`. A posição do cursor também passa pelo caleidoscópio, então o brush age espelhado em todos os setores. `σ` é o controle **Radius** (unidades de tela) e `α` é **Strength** (0–1) vezes o ganho de cada modo. Os nomes descrevem o que se vê: mostrar em `p` o que está mais longe do cursor comprime a imagem na direção dele. Por isso **Attract** usa a fórmula do repulsor acima (`p' = p + 2αgd`) e **Repel** a do attractor (`p' = p − αgd`). Os ganhos mantêm o mapa sem dobras: a imagem nunca se sobrepõe a si mesma, o que vale para o attract até ≈ 2,24 e para o repel até 1. **Twist** é uma rotação de verdade em torno do cursor, pelo ângulo `−π·α·g`, em vez da forma linearizada acima, que também afasta os pontos do centro. A força age enquanto o botão está pressionado, com entrada e saída exponenciais (0,12 s), e tem gêmea na CPU para o zoom continuar ancorado no cursor.
+
 ---
 
 # 22. Feedback temporal

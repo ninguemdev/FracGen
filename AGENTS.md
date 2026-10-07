@@ -66,7 +66,7 @@ src/
 ├── main.ts       ponto de entrada: monta renderer, controles e loop
 ├── app/          orquestração (animation loop)
 ├── engine/       WebGL: contexto, programas, renderer, framebuffers ping-pong
-├── interaction/  navegação com o mouse
+├── interaction/  mouse: navegação e brush
 ├── math/         matemática CPU-side (gêmeas de funções do shader)
 ├── shaders/      GLSL (.vert/.frag)
 ├── state/        parâmetros e paletas
@@ -76,7 +76,7 @@ src/
 ### Navegação e gêmeas na CPU
 
 - A navegação (`src/interaction/viewNavigation.ts`) mantém fixo o ponto do fractal sob o cursor. Para isso, `fractalPointAt()` reproduz na CPU o mapeamento pixel → plano do fractal do shader.
-- Toda etapa do shader que entra nesse mapeamento (hoje `kaleidoscope` e `domainWarp`) tem uma **gêmea em `src/math/`**, com testes. **Ao mudar a função no shader, mude a gêmea junto** — senão o zoom deixa de ficar ancorado no cursor.
+- Toda etapa do shader que entra nesse mapeamento (hoje `kaleidoscope`, `brushForce` e `domainWarp`) tem uma **gêmea em `src/math/`**, com testes. **Ao mudar a função no shader, mude a gêmea junto** — senão o zoom deixa de ficar ancorado no cursor.
 - Mudanças vindas de fora dos sliders passam por `clampParam()` para manter os valores dentro das faixas.
 
 ### Parâmetros
@@ -92,12 +92,13 @@ src/
 
 - O animation loop entrega `deltaTime` (segundos desde o frame anterior, limitado após a aba ficar oculta).
 - Parâmetros de velocidade são **integrados frame a frame** (`offset += speed × deltaTime`), nunca calculados como `speed × tempoTotal` — senão mover o slider de velocidade faz a imagem saltar.
-- Esses offsets acumulados são estado de execução, não parâmetros: ficam em `Animation` (`src/state/animation.ts`, avançado por `advanceAnimation()`) e não entram em `Params`, presets nem URL.
+- Esses offsets acumulados são estado de execução, não parâmetros: ficam em `Animation` (`src/state/animation.ts`, avançado por `advanceAnimation()`) e não entram em `Params`, presets nem URL. O mesmo vale para o brush: posição, botão pressionado e envelope de entrada/saída ficam em `Brush` (`src/state/brush.ts`, avançado por `advanceBrush()`); modo, raio e força são `Params`.
 - Parâmetros aplicados "por frame" (feedback) valem por frame a 60 fps e são convertidos para a duração real do frame por `feedbackForFrame()`: o que se compõe de frame a frame vira potência (`β^(60Δt)`, `zoom^(60Δt)`) e o que se soma escala linearmente (`θ·60Δt`). Assim o efeito não depende da taxa de quadros.
 
 ### Pipeline do shader
 
-- **Lente** em coordenadas de tela: `p = W(K(pixel))` (caleidoscópio, depois warp). **Câmera**: `z = p / zoom + position`. Ver as notas de implementação nos §5 e §9 do `FRACTAL_MATH_ENGINE.md`.
+- **Lente** em coordenadas de tela: `p = W(B(K(pixel)))` (caleidoscópio, brush, warp). **Câmera**: `z = p / zoom + position`. Ver as notas de implementação nos §5, §9 e §21 do `FRACTAL_MATH_ENGINE.md`.
+- **Mouse**: botão esquerdo arrasta com o Brush em Off e aplica o brush nos outros modos; botão direito sempre arrasta; roda dá zoom. Navegação (`viewNavigation.ts`) e brush (`brushInput.ts`) decidem pelo botão e por `params.brushMode`.
 - Efeitos novos de "lente" (simetria, distorções) entram antes da câmera; efeitos sobre o plano do fractal, depois.
 - **Feedback** (§22–§23): a cor final é misturada com o frame anterior, ampliado e girado em torno do centro da tela. O frame é desenhado em uma de duas texturas RGBA16F (`PingPongBuffers`), copiado para o canvas com `blitFramebuffer` e as texturas trocam de papel. Com Amount 0 o renderer desenha direto no canvas, sem os buffers. O resultado do feedback é arredondado estocasticamente para half float (`stochasticRound()`); não remova, senão imagens antigas nunca terminam de sumir. Ver a nota de implementação do §23.
 

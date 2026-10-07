@@ -46,7 +46,17 @@ export interface Params {
   saturation: number;
   brightness: number;
   contrast: number;
+
+  /** What the left mouse button does on the canvas; BRUSH_OFF pans the view instead. */
+  brushMode: number;
+  /** Size of the brush: standard deviation of its Gaussian falloff, in view units. */
+  brushRadius: number;
+  /** 0–1; each brush mode scales it to its own useful range. */
+  brushStrength: number;
 }
+
+/** brushMode value with no brush: the left mouse button pans. */
+export const BRUSH_OFF = 0;
 
 export type ParamKey = keyof Params;
 
@@ -99,6 +109,10 @@ export const PARAM_SPECS: Record<ParamKey, ParamSpec> = {
   saturation: { label: 'Saturation', min: 0, max: 2, step: 0.01 },
   brightness: { label: 'Brightness', min: 0, max: 2, step: 0.01 },
   contrast: { label: 'Contrast', min: 0, max: 2, step: 0.01 },
+
+  brushMode: { label: 'Brush', min: 0, max: 3, step: 1, options: ['Off', 'Attract', 'Repel', 'Twist'] },
+  brushRadius: { label: 'Radius', min: 0.03, max: 1, step: 0.01, logarithmic: true },
+  brushStrength: { label: 'Strength', min: 0, max: 1, step: 0.01 },
 };
 
 export const DEFAULT_PARAMS: Readonly<Params> = {
@@ -131,6 +145,10 @@ export const DEFAULT_PARAMS: Readonly<Params> = {
   saturation: 1,
   brightness: 1,
   contrast: 1,
+
+  brushMode: BRUSH_OFF,
+  brushRadius: 0.2,
+  brushStrength: 0.6,
 };
 
 const PARAM_KEYS = Object.keys(PARAM_SPECS) as ParamKey[];

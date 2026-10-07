@@ -16,6 +16,11 @@ uniform int uWarpOctaves;
 uniform float uWarpRotation;  // amplitude of the rotational warp, in radians
 uniform float uWarpPhase;     // animation phase accumulated from the warp speed
 
+uniform int uBrushMode;       // 0 off, 1 attract, 2 repel, 3 twist
+uniform vec2 uBrushCenter;    // pointer, in view coordinates
+uniform float uBrushRadius;   // standard deviation of the Gaussian falloff, in view units
+uniform float uBrushStrength; // 0–1, eased in on press and out after release
+
 uniform vec3 uPalette[4];    // cosine palette coefficients a, b, c, d
 uniform float uColorFrequency; // palette cycles per escape iteration
 uniform float uColorOffset;    // phase + accumulated color cycle, in palette cycles
@@ -39,6 +44,15 @@ const float ESCAPE_RADIUS = 16.0;
 
 // Phase offset between warp octaves so they don't move in lockstep (must match math/warp.ts).
 const float OCTAVE_PHASE_STEP = 1.7;
+
+// Brush modes and their gains at full strength (must match math/brushForce.ts). Attract stays
+// one-to-one up to a gain of ≈ 2.24; repel at 1 spreads the point under the pointer widest.
+const int BRUSH_ATTRACT = 1;
+const int BRUSH_REPEL = 2;
+const int BRUSH_TWIST = 3;
+const float BRUSH_ATTRACT_GAIN = 2.0;
+const float BRUSH_REPEL_GAIN = 1.0;
+const float BRUSH_TWIST_ANGLE = 3.14159265359;
 
 // Smallest normal half float; below it half floats are evenly spaced (subnormals).
 const float HALF_MIN_NORMAL = 1.0 / 16384.0;
@@ -66,6 +80,24 @@ vec2 kaleidoscope(vec2 p, float sides, bool mirrored) {
     float angle = mod(atan(p.y, p.x) + 0.5 * sector, sector) - 0.5 * sector;
     if (mirrored) angle = abs(angle);
     return length(p) * vec2(cos(angle), sin(angle));
+}
+
+// Mouse brush (FRACTAL_MATH_ENGINE.md §21): moves points near the brush with a Gaussian
+// weight. Showing at p what lies farther out squeezes the image toward the brush, so
+// attract uses the §21 repulsor formula (p + αgd) and repel the attractor one; twist turns
+// the image around the brush, a true rotation rather than §21's linearized one.
+vec2 brushForce(vec2 p, vec2 center) {
+    vec2 d = p - center;
+    float weight = uBrushStrength * exp(-dot(d, d) / (2.0 * uBrushRadius * uBrushRadius));
+    if (uBrushMode == BRUSH_ATTRACT) return p + BRUSH_ATTRACT_GAIN * weight * d;
+    if (uBrushMode == BRUSH_REPEL) return p - BRUSH_REPEL_GAIN * weight * d;
+    if (uBrushMode == BRUSH_TWIST) {
+        float angle = -BRUSH_TWIST_ANGLE * weight;
+        float c = cos(angle);
+        float s = sin(angle);
+        return center + mat2(c, s, -s, c) * d;
+    }
+    return p;
 }
 
 // Domain warp (FRACTAL_MATH_ENGINE.md §8–§10). Each octave doubles the frequency and halves
@@ -170,6 +202,10 @@ void main() {
     // Lens, in view space: symmetry and warp stay centred and keep their on-screen size,
     // while zoom and position slide the fractal underneath them, like turning a kaleidoscope.
     vec2 p = kaleidoscope(view, uSymmetrySides, uSymmetryMirror);
+    if (uBrushStrength > 0.0) {
+        // Folding the brush position too makes it act in every kaleidoscope sector at once.
+        p = brushForce(p, kaleidoscope(uBrushCenter, uSymmetrySides, uSymmetryMirror));
+    }
     p = domainWarp(p);
 
     // Camera: picks the region of the fractal plane seen through the lens.

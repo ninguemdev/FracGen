@@ -97,6 +97,10 @@ body {
   touch-action: none; /* dragging pans the fractal instead of scrolling the page */
 }
 
+.viewport canvas.brushing {
+  cursor: crosshair;
+}
+
 .viewport canvas.dragging {
   cursor: grabbing;
 }

@@ -1,8 +1,9 @@
 import { createProgram, createWebGL2Context, getUniformLocations } from './gl';
 import { PingPongBuffers, type RenderTarget } from './PingPongBuffers';
 import { feedbackForFrame, type Animation } from '../state/animation';
+import type { Brush } from '../state/brush';
 import { PALETTES } from '../state/palettes';
-import type { Params } from '../state/params';
+import { BRUSH_OFF, type Params } from '../state/params';
 import vertexSource from '../shaders/fullscreen.vert?raw';
 import fragmentSource from '../shaders/fractal.frag?raw';
 
@@ -22,6 +23,10 @@ const UNIFORM_NAMES = [
   'uWarpOctaves',
   'uWarpRotation',
   'uWarpPhase',
+  'uBrushMode',
+  'uBrushCenter',
+  'uBrushRadius',
+  'uBrushStrength',
   'uPalette',
   'uColorFrequency',
   'uColorOffset',
@@ -63,7 +68,7 @@ export class Renderer {
   }
 
   /** `deltaTime` is the length of this frame in seconds; feedback is scaled to it. */
-  render(params: Params, animation: Animation, deltaTime: number): void {
+  render(params: Params, animation: Animation, brush: Brush, deltaTime: number): void {
     const { gl, feedback } = this;
     this.resizeToDisplaySize();
 
@@ -72,7 +77,7 @@ export class Renderer {
     const feedbackOn = params.feedbackAmount > 0;
     gl.bindFramebuffer(gl.FRAMEBUFFER, feedbackOn ? feedback.next.framebuffer : null);
     gl.useProgram(this.program);
-    this.setFractalUniforms(params, animation);
+    this.setFractalUniforms(params, animation, brush);
     this.setFeedbackUniforms(params, deltaTime);
 
     // Three vertices generated in the vertex shader from gl_VertexID; no buffers needed.
@@ -86,7 +91,7 @@ export class Renderer {
     }
   }
 
-  private setFractalUniforms(params: Params, animation: Animation): void {
+  private setFractalUniforms(params: Params, animation: Animation, brush: Brush): void {
     const { gl, canvas, uniforms } = this;
     gl.uniform2f(uniforms.uResolution, canvas.width, canvas.height);
     gl.uniform1f(uniforms.uZoom, params.zoom);
@@ -102,6 +107,13 @@ export class Renderer {
     gl.uniform1i(uniforms.uWarpOctaves, params.warpOctaves);
     gl.uniform1f(uniforms.uWarpRotation, params.warpRotation);
     gl.uniform1f(uniforms.uWarpPhase, animation.warpPhase);
+
+    gl.uniform1i(uniforms.uBrushMode, params.brushMode);
+    gl.uniform2f(uniforms.uBrushCenter, brush.center[0], brush.center[1]);
+    gl.uniform1f(uniforms.uBrushRadius, params.brushRadius);
+    // Zero also tells the shader to skip the brush: no mode chosen, or fully faded out.
+    const brushOn = params.brushMode !== BRUSH_OFF;
+    gl.uniform1f(uniforms.uBrushStrength, brushOn ? params.brushStrength * brush.intensity : 0);
 
     gl.uniform3fv(uniforms.uPalette, PALETTES[params.palette].coefficients);
     gl.uniform1f(uniforms.uColorFrequency, params.colorFrequency);
