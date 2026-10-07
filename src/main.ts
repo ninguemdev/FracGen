@@ -1,20 +1,34 @@
 import './style.css';
 import { startAnimationLoop } from './app/animationLoop';
 import { Renderer } from './engine/Renderer';
+import { DEFAULT_PARAMS, type Params } from './state/params';
+import { ControlsPanel } from './ui/ControlsPanel';
 import { StatsDisplay } from './ui/StatsDisplay';
 
-const canvas = getElement<HTMLCanvasElement>('#canvas');
-const stats = new StatsDisplay(getElement('#stats'));
-
 try {
-  const renderer = new Renderer(canvas);
-  startAnimationLoop((time) => {
-    renderer.render(time);
-    stats.update(canvas.width, canvas.height);
-  });
+  start();
 } catch (error) {
   console.error(error);
   showFatalError(error instanceof Error ? error.message : String(error));
+}
+
+function start(): void {
+  const canvas = getElement<HTMLCanvasElement>('#canvas');
+  const renderer = new Renderer(canvas);
+  const stats = new StatsDisplay(getElement('#stats'));
+
+  const params: Params = { ...DEFAULT_PARAMS };
+  const controls = new ControlsPanel(getElement('#controls'), params);
+
+  getElement('#reset').addEventListener('click', () => {
+    Object.assign(params, DEFAULT_PARAMS);
+    controls.refresh();
+  });
+
+  startAnimationLoop((time) => {
+    renderer.render(time, params);
+    stats.update(canvas.width, canvas.height);
+  });
 }
 
 function showFatalError(message: string): void {

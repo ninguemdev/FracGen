@@ -59,6 +59,23 @@ export function createProgram(
   return program;
 }
 
+/** Looks up uniform locations by name, warning about any the program does not use. */
+export function getUniformLocations<Name extends string>(
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+  names: readonly Name[],
+): Record<Name, WebGLUniformLocation | null> {
+  const locations = {} as Record<Name, WebGLUniformLocation | null>;
+  for (const name of names) {
+    locations[name] = gl.getUniformLocation(program, name);
+    if (!locations[name]) {
+      // Setting a null location is a silent no-op, so a typo would otherwise go unnoticed.
+      console.warn(`[gl] Uniform "${name}" not found (misspelled, or unused and optimized out)`);
+    }
+  }
+  return locations;
+}
+
 function createShader(gl: WebGL2RenderingContext, type: GLenum, source: string): WebGLShader {
   const shader = gl.createShader(type);
   if (!shader) {

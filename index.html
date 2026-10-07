@@ -10,7 +10,10 @@
   <body>
     <header class="topbar">
       <h1 class="title">Fractal Playground</h1>
-      <output id="stats" class="stats"></output>
+      <div class="topbar-actions">
+        <output id="stats" class="stats"></output>
+        <button id="reset" class="button" type="button">Reset</button>
+      </div>
     </header>
 
     <main class="workspace">
@@ -18,9 +21,7 @@
         <canvas id="canvas"></canvas>
         <p id="fatal-error" class="fatal-error" hidden></p>
       </div>
-      <aside class="controls" aria-label="Controls">
-        <h2 class="controls-title">Controls</h2>
-      </aside>
+      <aside id="controls" class="controls" aria-label="Controls"></aside>
     </main>
 
     <script type="module" src="/src/main.ts"></script>

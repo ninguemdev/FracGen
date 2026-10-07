@@ -16,6 +16,7 @@ npm install
 npm run dev        # servidor de desenvolvimento
 npm run build      # checagem de tipos + build estático em dist/
 npm run preview    # serve o build de dist/
+npm test           # testes (Vitest) do código determinístico
 ```
 
 O conteúdo de `dist/` pode ser hospedado em qualquer servidor estático (os caminhos são relativos).
@@ -35,10 +36,17 @@ src/
 ├── app/                 orquestração (animation loop)
 ├── engine/              WebGL: contexto, programas, renderer
 ├── shaders/             GLSL
-└── ui/                  elementos de interface
+├── state/               parâmetros (valores padrão e faixas)
+└── ui/                  painel de controles, sliders, stats
 ```
 
-Novas pastas (`math/`, `state/`, `interaction/`) surgem quando a primeira task precisar delas.
+Novas pastas (`math/`, `interaction/`) surgem quando a primeira task precisar delas.
+
+## Parâmetros
+
+Todo valor controlável fica em um único objeto plano, `Params` (`src/state/params.ts`), com faixa e passo definidos em `PARAM_SPECS`. Os sliders escrevem diretamente nesse objeto e o renderer o lê a cada frame. Presets, estado na URL e mutação vão operar sobre ele; os grupos do painel (Fractal, Warp, Color…) são apenas apresentação, definidos em `src/ui/ControlsPanel.ts`.
+
+Para adicionar um parâmetro: campo em `Params` + `PARAM_SPECS` + `DEFAULT_PARAMS`, uniform no shader e em `Renderer.ts`, e a chave em um grupo do painel.
 
 ## Debug
 
