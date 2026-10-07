@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="data:," />
+    <title>Fractal Playground</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <h1 class="title">Fractal Playground</h1>
+      <output id="stats" class="stats"></output>
+    </header>
+
+    <main class="workspace">
+      <div class="viewport">
+        <canvas id="canvas"></canvas>
+        <p id="fatal-error" class="fatal-error" hidden></p>
+      </div>
+      <aside class="controls" aria-label="Controls">
+        <h2 class="controls-title">Controls</h2>
+      </aside>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
