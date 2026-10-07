@@ -11,6 +11,7 @@ const GROUPS: { title: string; keys: ParamKey[] }[] = [
   { title: 'Fractal', keys: ['iterations', 'juliaX', 'juliaY', 'zoom', 'positionX', 'positionY'] },
   { title: 'Symmetry', keys: ['symmetrySides', 'symmetryMirror'] },
   { title: 'Warp', keys: ['warpStrength', 'warpFrequency', 'warpOctaves', 'warpRotation', 'warpSpeed'] },
+  { title: 'Feedback', keys: ['feedbackAmount', 'feedbackZoom', 'feedbackRotation'] },
   {
     title: 'Color',
     keys: ['palette', 'colorFrequency', 'colorPhase', 'colorCycle', 'saturation', 'brightness', 'contrast'],

@@ -18,3 +18,27 @@ export function advanceAnimation(animation: Animation, params: Params, deltaTime
   animation.colorCycleOffset += params.colorCycle * deltaTime;
   animation.warpPhase += params.warpSpeed * deltaTime;
 }
+
+/** The feedback applied in one frame. */
+export interface FeedbackFrame {
+  /** Share of the previous frame kept. */
+  amount: number;
+  /** Magnification of the previous frame. */
+  zoom: number;
+  /** Rotation of the previous frame, in radians. */
+  rotation: number;
+}
+
+// The feedback params are per frame at this rate (FRACTAL_MATH_ENGINE.md §34 uses rad/frame).
+const REFERENCE_FRAME_RATE = 60;
+
+// Scaled to the real frame time so trails fade, grow and turn equally fast at any frame rate:
+// the kept share and the zoom compound from frame to frame (powers), the rotation adds up.
+export function feedbackForFrame(params: Params, deltaTime: number): FeedbackFrame {
+  const frames = deltaTime * REFERENCE_FRAME_RATE;
+  return {
+    amount: params.feedbackAmount ** frames,
+    zoom: params.feedbackZoom ** frames,
+    rotation: params.feedbackRotation * frames,
+  };
+}

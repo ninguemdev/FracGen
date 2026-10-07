@@ -780,6 +780,8 @@ tende a parecer contrair para o centro.
 
 Uma pequena rotação por frame gera espirais persistentes.
 
+**Nota de implementação (§22–§23).** O feedback mistura a **cor final** (depois da paleta e dos ajustes de cor), como no §43, e não o valor de escape antes da paleta como sugerem §29/§41: os rastros guardam a fase de paleta com que foram desenhados (o color cycle deixa rastros coloridos) e o interior do conjunto não precisa de tratamento especial. O controle **Zoom** é a ampliação do frame anterior a cada frame: o shader lê `I_{t-1}(q)` com `q = R(−θ)·p / zoom`, então o que estava em `q` vai para `p` — `zoom > 1` faz a imagem fluir para fora e `zoom < 1`, para o centro. É a fórmula acima com `s_f = zoom` e `θ_f = −θ`; note que, por ela, `s_f < 1` faz o conteúdo convergir para o centro, o oposto do que diz o texto acima. `p` são as coordenadas de tela centradas e com aspecto corrigido do §2: o centro do feedback é o centro da tela, como a lente do §5, e a rotação não se deforma em telas retangulares. O offset `d` não foi implementado. Fora da imagem a textura se repete espelhada, continuando-a sem costura. Amount, Zoom e Rotation valem por frame a 60 fps (as unidades do §34) e são convertidos para a duração real de cada frame — `β^(60Δt)`, `zoom^(60Δt)`, `θ·60Δt` — para que os rastros se apaguem, cresçam e girem à mesma velocidade em qualquer taxa de quadros. A memória são duas texturas RGBA16F em ping-pong. Com feedback forte, a mudança por frame `(1−β)(F−I)` fica menor que a precisão do half float e o arredondamento a descartaria para sempre (imagens antigas nunca terminariam de sumir); por isso o shader arredonda o resultado estocasticamente para um dos dois half floats vizinhos, o que é exato na média.
+
 ---
 
 # 24. Feedback não linear

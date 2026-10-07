@@ -56,7 +56,7 @@ Pipeline alvo, construído progressivamente (uma fase por task):
 
 ```text
 coordinates → zoom/rotation/position → kaleidoscope → domain warp → Julia
-→ smooth escape → temporal feedback → procedural palette → canvas
+→ smooth escape → procedural palette → temporal feedback → canvas
 ```
 
 Estrutura atual:
@@ -65,7 +65,7 @@ Estrutura atual:
 src/
 ├── main.ts       ponto de entrada: monta renderer, controles e loop
 ├── app/          orquestração (animation loop)
-├── engine/       WebGL: contexto, programas, renderer, (futuro) framebuffers
+├── engine/       WebGL: contexto, programas, renderer, framebuffers ping-pong
 ├── interaction/  navegação com o mouse
 ├── math/         matemática CPU-side (gêmeas de funções do shader)
 ├── shaders/      GLSL (.vert/.frag)
@@ -84,7 +84,7 @@ src/
 - Todo valor controlável vive em **um único objeto plano** `Params` em `src/state/params.ts`, com `PARAM_SPECS` (rótulo, faixa, passo, escala log) e `DEFAULT_PARAMS`.
 - Presets, URL, seed e mutação operarão sobre esse objeto. Grupos do painel são só apresentação (`src/ui/ControlsPanel.ts`).
 - Os sliders escrevem direto em `params`; o renderer lê a cada frame. Não crie store/eventos até existir necessidade real.
-- Para adicionar um parâmetro: `Params` + `PARAM_SPECS` + `DEFAULT_PARAMS` → uniform no shader → `UNIFORM_NAMES` e `render()` em `Renderer.ts` (mapeamento explícito, sem sistema genérico de uniforms) → chave em um grupo do painel.
+- Para adicionar um parâmetro: `Params` + `PARAM_SPECS` + `DEFAULT_PARAMS` → uniform no shader → `UNIFORM_NAMES` e os métodos `set…Uniforms()` em `Renderer.ts` (mapeamento explícito, sem sistema genérico de uniforms) → chave em um grupo do painel.
 - Faixas iniciais seguem `FRACTAL_MATH_ENGINE.md` §34; zoom (até 2000) e iterações (até 1024) foram ampliados para os zooms profundos da navegação.
 - Escolhas discretas (ex.: paleta) são índices numéricos com `options` no spec; o painel mostra um `<select>`. Liga/desliga usa o mesmo mecanismo: valor 0/1 com `options: ['Off', 'On']`.
 
@@ -93,11 +93,13 @@ src/
 - O animation loop entrega `deltaTime` (segundos desde o frame anterior, limitado após a aba ficar oculta).
 - Parâmetros de velocidade são **integrados frame a frame** (`offset += speed × deltaTime`), nunca calculados como `speed × tempoTotal` — senão mover o slider de velocidade faz a imagem saltar.
 - Esses offsets acumulados são estado de execução, não parâmetros: ficam em `Animation` (`src/state/animation.ts`, avançado por `advanceAnimation()`) e não entram em `Params`, presets nem URL.
+- Parâmetros aplicados "por frame" (feedback) valem por frame a 60 fps e são convertidos para a duração real do frame por `feedbackForFrame()`: o que se compõe de frame a frame vira potência (`β^(60Δt)`, `zoom^(60Δt)`) e o que se soma escala linearmente (`θ·60Δt`). Assim o efeito não depende da taxa de quadros.
 
 ### Pipeline do shader
 
 - **Lente** em coordenadas de tela: `p = W(K(pixel))` (caleidoscópio, depois warp). **Câmera**: `z = p / zoom + position`. Ver as notas de implementação nos §5 e §9 do `FRACTAL_MATH_ENGINE.md`.
 - Efeitos novos de "lente" (simetria, distorções) entram antes da câmera; efeitos sobre o plano do fractal, depois.
+- **Feedback** (§22–§23): a cor final é misturada com o frame anterior, ampliado e girado em torno do centro da tela. O frame é desenhado em uma de duas texturas RGBA16F (`PingPongBuffers`), copiado para o canvas com `blitFramebuffer` e as texturas trocam de papel. Com Amount 0 o renderer desenha direto no canvas, sem os buffers. O resultado do feedback é arredondado estocasticamente para half float (`stochasticRound()`); não remova, senão imagens antigas nunca terminam de sumir. Ver a nota de implementação do §23.
 
 ## 6. Shaders
 
@@ -112,7 +114,7 @@ src/
 
 - Sempre considere: custo por pixel, iterações, resolução interna, leituras de textura, número de passes, loops no fragment shader.
 - A resolução do drawing buffer é limitada a 2× (`MAX_PIXEL_RATIO`). Resolução interna reduzida durante interação é permitida quando for necessária.
-- Referência: manter 60 fps em GPU integrada (Intel UHD 730 a 1280×860) com os valores padrão e até 256 iterações. O máximo de 1024 iterações existe para zooms profundos e pode cair para ~37 fps — é escolha do usuário.
+- Referência: manter 60 fps em GPU integrada (Intel UHD 730 a 1280×860) com os valores padrão e até 256 iterações. O máximo de 1024 iterações existe para zooms profundos e pode cair para ~37 fps — é escolha do usuário. O feedback ligado custa uma escrita RGBA16F e uma cópia por frame: mantém 60 fps na referência, mas a 2× com 256 iterações cai para ~48 fps.
 - Não otimize prematuramente, mas não escolha soluções obviamente caras.
 
 ## 8. Debug

@@ -23,6 +23,12 @@ uniform float uContrast;
 uniform float uSaturation;
 uniform float uBrightness;
 
+uniform sampler2D uPreviousFrame;
+uniform float uFeedbackAmount;   // share of the previous frame kept in this frame
+uniform float uFeedbackZoom;     // magnification of the previous frame in this frame
+uniform float uFeedbackRotation; // rotation of the previous frame in this frame, in radians
+uniform uint uFrame;             // frame counter, seeds the rounding noise
+
 out vec4 outColor;
 
 const float TAU = 6.28318530718;
@@ -34,10 +40,18 @@ const float ESCAPE_RADIUS = 16.0;
 // Phase offset between warp octaves so they don't move in lockstep (must match math/warp.ts).
 const float OCTAVE_PHASE_STEP = 1.7;
 
+// Smallest normal half float; below it half floats are evenly spaced (subnormals).
+const float HALF_MIN_NORMAL = 1.0 / 16384.0;
+
 // Pixel → centered, aspect-corrected coordinates: y ∈ [-1, 1], x ∈ [-aspect, aspect]
 // (FRACTAL_MATH_ENGINE.md §2).
 vec2 pixelToWorld(vec2 pixel) {
     return (2.0 * pixel - uResolution) / uResolution.y;
+}
+
+// Inverse of pixelToWorld, normalized to texture coordinates.
+vec2 worldToUv(vec2 p) {
+    return 0.5 + 0.5 * p * uResolution.y / uResolution;
 }
 
 // Kaleidoscope fold (FRACTAL_MATH_ENGINE.md §5). The plane is cut into `sides` angular
@@ -114,11 +128,48 @@ vec3 adjustColor(vec3 color) {
     return clamp(color * uBrightness, 0.0, 1.0);
 }
 
+// Previous frame, magnified and turned about the centre of the view (§23). Looking it up at
+// q = R(−θ)·p / zoom moves what was at q to p, so zoom > 1 makes the image flow outward and
+// a small rotation per frame winds the trails into spirals. View coordinates keep the
+// rotation round on a non-square canvas.
+vec3 previousFrame(vec2 p) {
+    float c = cos(uFeedbackRotation);
+    float s = sin(uFeedbackRotation);
+    vec2 q = mat2(c, -s, s, c) * p / uFeedbackZoom;
+    return texture(uPreviousFrame, worldToUv(q)).rgb;
+}
+
+// PCG hash (Jarzynski & Olano, "Hash Functions for GPU Rendering", 2020).
+uint pcgHash(uint v) {
+    uint state = v * 747796405u + 2891336453u;
+    uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+    return (word >> 22u) ^ word;
+}
+
+// Uniform in [0, 1), independent for every pixel and frame. 24 bits convert to float exactly.
+float pixelNoise() {
+    uvec2 pixel = uvec2(gl_FragCoord.xy);
+    return float(pcgHash(pcgHash(pcgHash(pixel.x) + pixel.y) + uFrame) >> 8u) / 16777216.0;
+}
+
+// Strong feedback moves a pixel by only (1 − amount) × difference per frame. Once that is
+// under the spacing of the half-float buffer, plain rounding (truncation on some GPUs) keeps
+// the old value forever and faded images never quite disappear. Rounding to one of the two
+// neighbouring half floats at random, with probability proportional to closeness, is exact
+// on average, so the fade carries on; the noise is far below one 8-bit display step.
+vec3 stochasticRound(vec3 color) {
+    // Half floats have 10 mantissa bits: spacing 2^(⌊log₂ x⌋ − 10).
+    vec3 spacing = exp2(floor(log2(max(color, HALF_MIN_NORMAL))) - 10.0);
+    vec3 lower = floor(color / spacing) * spacing;
+    return lower + spacing * step(pixelNoise(), (color - lower) / spacing);
+}
+
 void main() {
+    vec2 view = pixelToWorld(gl_FragCoord.xy);
+
     // Lens, in view space: symmetry and warp stay centred and keep their on-screen size,
     // while zoom and position slide the fractal underneath them, like turning a kaleidoscope.
-    vec2 p = pixelToWorld(gl_FragCoord.xy);
-    p = kaleidoscope(p, uSymmetrySides, uSymmetryMirror);
+    vec2 p = kaleidoscope(view, uSymmetrySides, uSymmetryMirror);
     p = domainWarp(p);
 
     // Camera: picks the region of the fractal plane seen through the lens.
@@ -129,6 +180,12 @@ void main() {
     float t = uColorFrequency * escape + uColorOffset;
     float footprint = fwidth(t);
 
-    vec3 color = escape < 0.0 ? vec3(0.0) : palette(t, footprint);
-    outColor = vec4(adjustColor(color), 1.0);
+    vec3 color = adjustColor(escape < 0.0 ? vec3(0.0) : palette(t, footprint));
+
+    // Temporal feedback (§22): blending the finished colors, rather than escape values before
+    // the palette, lets trails keep the palette phase they were drawn with.
+    if (uFeedbackAmount > 0.0) {
+        color = stochasticRound(mix(color, previousFrame(view), uFeedbackAmount));
+    }
+    outColor = vec4(color, 1.0);
 }

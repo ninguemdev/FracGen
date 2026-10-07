@@ -32,7 +32,7 @@ function start(): void {
 
   startAnimationLoop((deltaTime) => {
     advanceAnimation(animation, params, deltaTime);
-    renderer.render(params, animation);
+    renderer.render(params, animation, deltaTime);
     stats.update(canvas.width, canvas.height);
   });
 }

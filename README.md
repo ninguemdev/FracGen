@@ -44,7 +44,7 @@ O desenvolvimento acontece em tasks pequenas, uma fase por vez.
 - [x] 4. Caleidoscópio — coordenadas polares, repetição angular, espelhamento
 - [x] 4.1 Navegação — arrastar para mover, roda do mouse para zoom no cursor
 - [x] 5. Domain warp — oitavas compostas, warp rotacional, animação
-- [ ] 6. Feedback temporal (ping-pong framebuffers)
+- [x] 6. Feedback temporal — ping-pong framebuffers, amount, zoom e rotation
 - [ ] 7. Interação com o mouse — attractor, twist, brush
 - [ ] 8. Presets
 - [ ] 9. Estado na URL — seed + parâmetros
@@ -71,6 +71,7 @@ Navegadores alvo: Chrome, Edge e Firefox de desktop com WebGL 2.
 - **Arrastar** o canvas move a imagem; a **roda do mouse** dá zoom mantendo fixo o ponto sob o cursor (também com o caleidoscópio ativo).
 - Os sliders do painel mostram e ajustam os mesmos valores; **Reset** volta à configuração inicial.
 - Em zooms profundos, aumente **Iterations**: regiões pretas costumam ser pontos que ainda não escaparam, não o interior do conjunto.
+- **Feedback** mistura cada frame com o anterior: **Amount** define quanto do frame anterior permanece (0 desliga), **Zoom** o amplia (> 1 flui para fora, < 1 para o centro) e **Rotation** o gira a cada frame. Os valores são por frame a 60 fps e se ajustam à taxa real, então o efeito tem a mesma velocidade em qualquer monitor.
 
 ## Stack
 
@@ -83,7 +84,7 @@ src/
 ├── main.ts              ponto de entrada: monta renderer, controles e loop
 ├── style.css
 ├── app/                 orquestração (animation loop)
-├── engine/              WebGL: contexto, programas, renderer
+├── engine/              WebGL: contexto, programas, renderer, framebuffers do feedback
 ├── interaction/         navegação com o mouse (arrastar, zoom)
 ├── math/                matemática CPU-side (gêmeas de funções do shader)
 ├── shaders/             GLSL
@@ -99,7 +100,7 @@ Para adicionar um parâmetro: campo em `Params` + `PARAM_SPECS` + `DEFAULT_PARAM
 
 ## Debug
 
-- O console mostra criação do contexto WebGL, a GPU usada e compilação/linkagem dos programas (prefixo `[gl]`).
+- O console mostra criação do contexto WebGL, a GPU usada, compilação/linkagem dos programas e o formato dos framebuffers de feedback (prefixo `[gl]`).
 - Erros de shader trazem o log do driver; os números de linha correspondem aos arquivos em `src/shaders/`.
 - Um uniform não encontrado no shader gera aviso no console (erro de digitação ou uniform não usado).
 - O topo da página mostra FPS e a resolução do drawing buffer.

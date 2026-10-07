@@ -27,6 +27,14 @@ export interface Params {
   /** Warp animation speed, in radians per second. */
   warpSpeed: number;
 
+  // Feedback values are per frame at 60 fps; they get scaled to the real frame time.
+  /** Share of the previous frame blended under each new one; 0 turns feedback off. */
+  feedbackAmount: number;
+  /** Magnification of the previous frame: above 1 the image flows outward, below 1 inward. */
+  feedbackZoom: number;
+  /** Rotation of the previous frame, in radians. */
+  feedbackRotation: number;
+
   /** Index into PALETTES. */
   palette: number;
   /** Palette cycles per escape iteration. */
@@ -74,6 +82,10 @@ export const PARAM_SPECS: Record<ParamKey, ParamSpec> = {
   warpRotation: { label: 'Rotation', min: -3, max: 3, step: 0.01 },
   warpSpeed: { label: 'Animation', min: -3, max: 3, step: 0.01 },
 
+  feedbackAmount: { label: 'Amount', min: 0, max: 0.99, step: 0.01 },
+  feedbackZoom: { label: 'Zoom', min: 0.96, max: 1.04, step: 0.001 },
+  feedbackRotation: { label: 'Rotation', min: -0.03, max: 0.03, step: 0.0005 },
+
   palette: {
     label: 'Palette',
     min: 0,
@@ -106,6 +118,11 @@ export const DEFAULT_PARAMS: Readonly<Params> = {
   warpOctaves: 3,
   warpRotation: 0,
   warpSpeed: 0.5,
+
+  // Off by default; zoom and rotation are set so that raising Amount alone already spirals.
+  feedbackAmount: 0,
+  feedbackZoom: 1.01,
+  feedbackRotation: 0.005,
 
   palette: 0,
   colorFrequency: 0.04,
