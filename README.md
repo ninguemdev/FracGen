@@ -43,7 +43,7 @@ O desenvolvimento acontece em tasks pequenas, uma fase por vez.
 - [x] 3. Coloração — paleta, frequência, fase, contraste, color cycle
 - [x] 4. Caleidoscópio — coordenadas polares, repetição angular, espelhamento
 - [x] 4.1 Navegação — arrastar para mover, roda do mouse para zoom no cursor
-- [ ] 5. Domain warp
+- [x] 5. Domain warp — oitavas compostas, warp rotacional, animação
 - [ ] 6. Feedback temporal (ping-pong framebuffers)
 - [ ] 7. Interação com o mouse — attractor, twist, brush
 - [ ] 8. Presets

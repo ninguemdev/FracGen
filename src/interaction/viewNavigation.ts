@@ -1,5 +1,7 @@
 import { kaleidoscope } from '../math/kaleidoscope';
 import type { Vec2 } from '../math/vec2';
+import { domainWarp } from '../math/warp';
+import type { Animation } from '../state/animation';
 import { clampParam, type Params } from '../state/params';
 
 // Zoom factor e^(−rate·pixels): one ~100 px wheel notch zooms by about 16 %.
@@ -8,27 +10,34 @@ const WHEEL_ZOOM_RATE = 0.0015;
 const PIXELS_PER_LINE = 16;
 
 /** The fractal-plane point shown at view point p — the CPU twin of the shader's mapping. */
-export function fractalPointAt(params: Params, p: Vec2): Vec2 {
-  const [x, y] = kaleidoscope(p, params.symmetrySides, params.symmetryMirror === 1);
+export function fractalPointAt(params: Params, animation: Animation, p: Vec2): Vec2 {
+  const folded = kaleidoscope(p, params.symmetrySides, params.symmetryMirror === 1);
+  const [x, y] = domainWarp(folded, {
+    strength: params.warpStrength,
+    frequency: params.warpFrequency,
+    octaves: params.warpOctaves,
+    rotation: params.warpRotation,
+    phase: animation.warpPhase,
+  });
   return [x / params.zoom + params.positionX, y / params.zoom + params.positionY];
 }
 
 /** Zooms by `factor`, keeping the fractal point under view point p in place. */
-export function zoomAt(params: Params, p: Vec2, factor: number): void {
-  const anchor = fractalPointAt(params, p);
+export function zoomAt(params: Params, animation: Animation, p: Vec2, factor: number): void {
+  const anchor = fractalPointAt(params, animation, p);
   params.zoom = clampParam('zoom', params.zoom * factor);
-  moveUnder(params, anchor, p);
+  moveUnder(params, animation, anchor, p);
 }
 
 /** Moves the fractal so the point that was under `from` ends up under `to`. */
-export function pan(params: Params, from: Vec2, to: Vec2): void {
-  moveUnder(params, fractalPointAt(params, from), to);
+export function pan(params: Params, animation: Animation, from: Vec2, to: Vec2): void {
+  moveUnder(params, animation, fractalPointAt(params, animation, from), to);
 }
 
 // The position enters the mapping as a plain translation, so a single correction places
 // `point` exactly at p (unless the position range clamps it).
-function moveUnder(params: Params, point: Vec2, p: Vec2): void {
-  const [x, y] = fractalPointAt(params, p);
+function moveUnder(params: Params, animation: Animation, point: Vec2, p: Vec2): void {
+  const [x, y] = fractalPointAt(params, animation, p);
   params.positionX = clampParam('positionX', params.positionX + point[0] - x);
   params.positionY = clampParam('positionY', params.positionY + point[1] - y);
 }
@@ -37,6 +46,7 @@ function moveUnder(params: Params, point: Vec2, p: Vec2): void {
 export function attachViewNavigation(
   canvas: HTMLCanvasElement,
   params: Params,
+  animation: Animation,
   onChange: () => void,
 ): void {
   let dragPoint: Vec2 | null = null;
@@ -51,7 +61,7 @@ export function attachViewNavigation(
   canvas.addEventListener('pointermove', (event) => {
     if (!dragPoint) return;
     const point = viewPoint(canvas, event);
-    pan(params, dragPoint, point);
+    pan(params, animation, dragPoint, point);
     dragPoint = point;
     onChange();
   });
@@ -69,7 +79,7 @@ export function attachViewNavigation(
       event.preventDefault();
       const pixels =
         event.deltaMode === WheelEvent.DOM_DELTA_PIXEL ? event.deltaY : event.deltaY * PIXELS_PER_LINE;
-      zoomAt(params, viewPoint(canvas, event), Math.exp(-pixels * WHEEL_ZOOM_RATE));
+      zoomAt(params, animation, viewPoint(canvas, event), Math.exp(-pixels * WHEEL_ZOOM_RATE));
       onChange();
     },
     { passive: false },

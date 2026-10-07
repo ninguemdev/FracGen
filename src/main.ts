@@ -2,6 +2,7 @@ import './style.css';
 import { startAnimationLoop } from './app/animationLoop';
 import { Renderer } from './engine/Renderer';
 import { attachViewNavigation } from './interaction/viewNavigation';
+import { advanceAnimation, createAnimation } from './state/animation';
 import { DEFAULT_PARAMS, type Params } from './state/params';
 import { ControlsPanel } from './ui/ControlsPanel';
 import { StatsDisplay } from './ui/StatsDisplay';
@@ -19,22 +20,19 @@ function start(): void {
   const stats = new StatsDisplay(getElement('#stats'));
 
   const params: Params = { ...DEFAULT_PARAMS };
+  const animation = createAnimation();
   const controls = new ControlsPanel(getElement('#controls'), params);
 
-  attachViewNavigation(canvas, params, () => controls.refresh());
+  attachViewNavigation(canvas, params, animation, () => controls.refresh());
 
   getElement('#reset').addEventListener('click', () => {
     Object.assign(params, DEFAULT_PARAMS);
     controls.refresh();
   });
 
-  // Integrated frame by frame rather than computed as speed × elapsed time,
-  // so changing the Color Cycle speed never makes the palette jump.
-  let colorCycleOffset = 0;
-
   startAnimationLoop((deltaTime) => {
-    colorCycleOffset += params.colorCycle * deltaTime;
-    renderer.render(params, colorCycleOffset);
+    advanceAnimation(animation, params, deltaTime);
+    renderer.render(params, animation);
     stats.update(canvas.width, canvas.height);
   });
 }

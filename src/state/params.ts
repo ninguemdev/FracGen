@@ -17,6 +17,16 @@ export interface Params {
   /** 1 reflects every sector about its centre line (kaleidoscope); 0 only repeats it. */
   symmetryMirror: number;
 
+  /** Displacement of the first warp octave, in view units. */
+  warpStrength: number;
+  /** Spatial frequency of the first warp octave. */
+  warpFrequency: number;
+  warpOctaves: number;
+  /** Amplitude of the rotational warp, in radians. */
+  warpRotation: number;
+  /** Warp animation speed, in radians per second. */
+  warpSpeed: number;
+
   /** Index into PALETTES. */
   palette: number;
   /** Palette cycles per escape iteration. */
@@ -58,6 +68,12 @@ export const PARAM_SPECS: Record<ParamKey, ParamSpec> = {
   symmetrySides: { label: 'Sides', min: 1, max: 16, step: 1 },
   symmetryMirror: { label: 'Mirror', min: 0, max: 1, step: 1, options: ['Off', 'On'] },
 
+  warpStrength: { label: 'Strength', min: 0, max: 1.5, step: 0.001 },
+  warpFrequency: { label: 'Frequency', min: 0.1, max: 12, step: 0.01, logarithmic: true },
+  warpOctaves: { label: 'Octaves', min: 1, max: 5, step: 1 },
+  warpRotation: { label: 'Rotation', min: -3, max: 3, step: 0.01 },
+  warpSpeed: { label: 'Animation', min: -3, max: 3, step: 0.01 },
+
   palette: {
     label: 'Palette',
     min: 0,
@@ -84,6 +100,12 @@ export const DEFAULT_PARAMS: Readonly<Params> = {
 
   symmetrySides: 1,
   symmetryMirror: 1,
+
+  warpStrength: 0,
+  warpFrequency: 3,
+  warpOctaves: 3,
+  warpRotation: 0,
+  warpSpeed: 0.5,
 
   palette: 0,
   colorFrequency: 0.04,

@@ -217,13 +217,14 @@ Valores interessantes:
 
 Valores não inteiros também podem produzir deformações interessantes se tratados adequadamente.
 
-**Nota de implementação.** No shader, a dobra acontece **depois do zoom e antes da translação** (`position`), e não depois de `T` completo como em §29/§42:
+**Nota de implementação.** No shader, caleidoscópio e domain warp formam uma **lente em coordenadas de tela**, aplicada **antes** do zoom e da posição — e não depois de `T` completo como em §29/§42:
 
 ```text
-p = kaleidoscope(pixel / zoom) + position
+p = W(K(pixel))            lente: simetria e warp
+z = p / zoom + position    câmera
 ```
 
-Assim o centro de simetria fica fixo no centro da tela e `position` desliza o fractal "por baixo dos espelhos", como girar um caleidoscópio — cada movimento gera um padrão novo. Com `position = 0` as duas ordens são equivalentes. Os setores são centrados no eixo +x, `N = 1` desliga a simetria, e só valores inteiros são usados por enquanto (um `N` fracionário deixa uma costura onde os setores não fecham). Sem espelhamento, o resultado é apenas repetição rotacional (simetria de ordem N).
+Assim o centro de simetria fica fixo no centro da tela e zoom/posição deslizam o fractal "por baixo da lente", como girar um caleidoscópio — cada movimento gera um padrão novo. Como `K` é homogêneo (`K(λp) = λK(p)`), aplicá-lo antes ou depois do zoom dá o mesmo resultado; com `position = 0` também equivale à ordem original. Os setores são centrados no eixo +x, `N = 1` desliga a simetria, e só valores inteiros são usados por enquanto (um `N` fracionário deixa uma costura onde os setores não fecham). Sem espelhamento, o resultado é apenas repetição rotacional (simetria de ordem N).
 
 ---
 
@@ -348,6 +349,8 @@ octave 2 → deformação média
 octave 3 → pequenos detalhes
 octave 4 → microestrutura
 ```
+
+**Nota de implementação.** O warp é aplicado em coordenadas de tela (ver nota do §5), então suas ondas mantêm o mesmo tamanho na tela em qualquer zoom — no plano do fractal, um zoom profundo transformaria o warp num deslocamento gigante. As oitavas são **compostas**: cada uma desloca o ponto já deslocado pela anterior (`p ← p + w_i(p)`), lendo "recursivo" literalmente; com uma oitava é idêntico ao §8. As fases são `φ_i = ωt + 1.7·i` e `ψ_i = −ωt + 1.7·i`, para as oitavas não se moverem em sincronia. Em seguida vem o warp rotacional do §10, com a mesma frequência `f` e fase `ωt`. A fase `ωt` é acumulada frame a frame na CPU (`ω` = Animation).
 
 ---
 

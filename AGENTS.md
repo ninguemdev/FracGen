@@ -76,7 +76,7 @@ src/
 ### Navegação e gêmeas na CPU
 
 - A navegação (`src/interaction/viewNavigation.ts`) mantém fixo o ponto do fractal sob o cursor. Para isso, `fractalPointAt()` reproduz na CPU o mapeamento pixel → plano do fractal do shader.
-- Toda etapa do shader que entra nesse mapeamento (hoje `kaleidoscope`) tem uma **gêmea em `src/math/`**, com testes. **Ao mudar a função no shader, mude a gêmea junto** — senão o zoom deixa de ficar ancorado no cursor.
+- Toda etapa do shader que entra nesse mapeamento (hoje `kaleidoscope` e `domainWarp`) tem uma **gêmea em `src/math/`**, com testes. **Ao mudar a função no shader, mude a gêmea junto** — senão o zoom deixa de ficar ancorado no cursor.
 - Mudanças vindas de fora dos sliders passam por `clampParam()` para manter os valores dentro das faixas.
 
 ### Parâmetros
@@ -92,7 +92,12 @@ src/
 
 - O animation loop entrega `deltaTime` (segundos desde o frame anterior, limitado após a aba ficar oculta).
 - Parâmetros de velocidade são **integrados frame a frame** (`offset += speed × deltaTime`), nunca calculados como `speed × tempoTotal` — senão mover o slider de velocidade faz a imagem saltar.
-- Esses offsets acumulados são estado de execução, não parâmetros: não entram em `Params`, presets nem URL.
+- Esses offsets acumulados são estado de execução, não parâmetros: ficam em `Animation` (`src/state/animation.ts`, avançado por `advanceAnimation()`) e não entram em `Params`, presets nem URL.
+
+### Pipeline do shader
+
+- **Lente** em coordenadas de tela: `p = W(K(pixel))` (caleidoscópio, depois warp). **Câmera**: `z = p / zoom + position`. Ver as notas de implementação nos §5 e §9 do `FRACTAL_MATH_ENGINE.md`.
+- Efeitos novos de "lente" (simetria, distorções) entram antes da câmera; efeitos sobre o plano do fractal, depois.
 
 ## 6. Shaders
 

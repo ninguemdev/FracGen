@@ -10,6 +10,7 @@ interface Control {
 const GROUPS: { title: string; keys: ParamKey[] }[] = [
   { title: 'Fractal', keys: ['iterations', 'juliaX', 'juliaY', 'zoom', 'positionX', 'positionY'] },
   { title: 'Symmetry', keys: ['symmetrySides', 'symmetryMirror'] },
+  { title: 'Warp', keys: ['warpStrength', 'warpFrequency', 'warpOctaves', 'warpRotation', 'warpSpeed'] },
   {
     title: 'Color',
     keys: ['palette', 'colorFrequency', 'colorPhase', 'colorCycle', 'saturation', 'brightness', 'contrast'],

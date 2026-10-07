@@ -1,4 +1,5 @@
 import { createProgram, createWebGL2Context, getUniformLocations } from './gl';
+import type { Animation } from '../state/animation';
 import { PALETTES } from '../state/palettes';
 import type { Params } from '../state/params';
 import vertexSource from '../shaders/fullscreen.vert?raw';
@@ -15,6 +16,11 @@ const UNIFORM_NAMES = [
   'uIterations',
   'uSymmetrySides',
   'uSymmetryMirror',
+  'uWarpStrength',
+  'uWarpFrequency',
+  'uWarpOctaves',
+  'uWarpRotation',
+  'uWarpPhase',
   'uPalette',
   'uColorFrequency',
   'uColorOffset',
@@ -43,11 +49,7 @@ export class Renderer {
     });
   }
 
-  /**
-   * @param params the user configuration
-   * @param colorCycleOffset palette shift accumulated from the Color Cycle speed, in cycles
-   */
-  render(params: Params, colorCycleOffset: number): void {
+  render(params: Params, animation: Animation): void {
     const { gl, canvas, uniforms } = this;
     this.resizeToDisplaySize();
 
@@ -61,9 +63,15 @@ export class Renderer {
     gl.uniform1f(uniforms.uSymmetrySides, params.symmetrySides);
     gl.uniform1i(uniforms.uSymmetryMirror, params.symmetryMirror);
 
+    gl.uniform1f(uniforms.uWarpStrength, params.warpStrength);
+    gl.uniform1f(uniforms.uWarpFrequency, params.warpFrequency);
+    gl.uniform1i(uniforms.uWarpOctaves, params.warpOctaves);
+    gl.uniform1f(uniforms.uWarpRotation, params.warpRotation);
+    gl.uniform1f(uniforms.uWarpPhase, animation.warpPhase);
+
     gl.uniform3fv(uniforms.uPalette, PALETTES[params.palette].coefficients);
     gl.uniform1f(uniforms.uColorFrequency, params.colorFrequency);
-    gl.uniform1f(uniforms.uColorOffset, params.colorPhase + colorCycleOffset);
+    gl.uniform1f(uniforms.uColorOffset, params.colorPhase + animation.colorCycleOffset);
     gl.uniform1f(uniforms.uContrast, params.contrast);
     gl.uniform1f(uniforms.uSaturation, params.saturation);
     gl.uniform1f(uniforms.uBrightness, params.brightness);

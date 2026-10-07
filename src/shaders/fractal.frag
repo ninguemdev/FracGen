@@ -10,7 +10,13 @@ uniform int uIterations;
 uniform float uSymmetrySides;
 uniform bool uSymmetryMirror;
 
-uniform vec3 uPalette[4];     // cosine palette coefficients a, b, c, d
+uniform float uWarpStrength;  // displacement of the first octave, in view units
+uniform float uWarpFrequency; // spatial frequency of the first octave
+uniform int uWarpOctaves;
+uniform float uWarpRotation;  // amplitude of the rotational warp, in radians
+uniform float uWarpPhase;     // animation phase accumulated from the warp speed
+
+uniform vec3 uPalette[4];    // cosine palette coefficients a, b, c, d
 uniform float uColorFrequency; // palette cycles per escape iteration
 uniform float uColorOffset;    // phase + accumulated color cycle, in palette cycles
 uniform float uContrast;
@@ -24,6 +30,9 @@ const float TAU = 6.28318530718;
 // Larger than the classic R = 2: the smooth escape formula assumes |z|² ≫ |c| at escape,
 // and a small radius leaves visible seams between iteration bands. Costs ~2 extra iterations.
 const float ESCAPE_RADIUS = 16.0;
+
+// Phase offset between warp octaves so they don't move in lockstep (must match math/warp.ts).
+const float OCTAVE_PHASE_STEP = 1.7;
 
 // Pixel → centered, aspect-corrected coordinates: y ∈ [-1, 1], x ∈ [-aspect, aspect]
 // (FRACTAL_MATH_ENGINE.md §2).
@@ -43,6 +52,28 @@ vec2 kaleidoscope(vec2 p, float sides, bool mirrored) {
     float angle = mod(atan(p.y, p.x) + 0.5 * sector, sector) - 0.5 * sector;
     if (mirrored) angle = abs(angle);
     return length(p) * vec2(cos(angle), sin(angle));
+}
+
+// Domain warp (FRACTAL_MATH_ENGINE.md §8–§10). Each octave doubles the frequency and halves
+// the amplitude (§9); octaves are composed — each displaces the already displaced point —
+// which folds the field into itself and reads as liquid rather than a plain wobble.
+// The rotational warp (§10) then turns every point by an angle that oscillates with its
+// radius, twisting concentric rings in alternating directions.
+vec2 domainWarp(vec2 p) {
+    float amplitude = uWarpStrength;
+    float frequency = uWarpFrequency;
+    for (int i = 0; i < uWarpOctaves; i++) {
+        float offset = float(i) * OCTAVE_PHASE_STEP;
+        p += amplitude * vec2(sin(frequency * p.y + uWarpPhase + offset),
+                              cos(frequency * p.x - uWarpPhase + offset));
+        amplitude *= 0.5;
+        frequency *= 2.0;
+    }
+
+    float angle = uWarpRotation * sin(uWarpFrequency * length(p) - uWarpPhase);
+    float c = cos(angle);
+    float s = sin(angle);
+    return mat2(c, s, -s, c) * p;
 }
 
 // (x + iy)² = x² − y² + 2xy·i
@@ -84,10 +115,14 @@ vec3 adjustColor(vec3 color) {
 }
 
 void main() {
-    // The fold happens before the translation: the symmetry stays centred on screen and
-    // Position slides the fractal underneath the mirrors, like turning a kaleidoscope.
-    vec2 p = kaleidoscope(pixelToWorld(gl_FragCoord.xy) / uZoom, uSymmetrySides, uSymmetryMirror);
-    vec2 z = p + uCenter;
+    // Lens, in view space: symmetry and warp stay centred and keep their on-screen size,
+    // while zoom and position slide the fractal underneath them, like turning a kaleidoscope.
+    vec2 p = pixelToWorld(gl_FragCoord.xy);
+    p = kaleidoscope(p, uSymmetrySides, uSymmetryMirror);
+    p = domainWarp(p);
+
+    // Camera: picks the region of the fractal plane seen through the lens.
+    vec2 z = p / uZoom + uCenter;
     float escape = juliaSmoothEscape(z, uJuliaC);
 
     // fwidth is taken outside any branch: derivatives need t from every pixel of the 2×2 quad.
