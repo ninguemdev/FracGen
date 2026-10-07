@@ -76,7 +76,7 @@ src/
 ### Navegação e gêmeas na CPU
 
 - A navegação (`src/interaction/viewNavigation.ts`) mantém fixo o ponto do fractal sob o cursor. Para isso, `fractalPointAt()` reproduz na CPU o mapeamento pixel → plano do fractal do shader.
-- Toda etapa do shader que entra nesse mapeamento (hoje `kaleidoscope`, `brushForce` e `domainWarp`) tem uma **gêmea em `src/math/`**, com testes. **Ao mudar a função no shader, mude a gêmea junto** — senão o zoom deixa de ficar ancorado no cursor.
+- Toda etapa do shader que entra nesse mapeamento (hoje `blackHoleLens`, `kaleidoscope`, `brushForce` e `domainWarp`) tem uma **gêmea em `src/math/`**, com testes. **Ao mudar a função no shader, mude a gêmea junto** — senão o zoom deixa de ficar ancorado no cursor.
 - Mudanças vindas de fora dos sliders passam por `clampParam()` para manter os valores dentro das faixas.
 
 ### Parâmetros
@@ -98,7 +98,8 @@ src/
 
 ### Pipeline do shader
 
-- **Lente** em coordenadas de tela: `p = W(B(K(pixel)))` (caleidoscópio, brush, warp). **Câmera**: `z = p / zoom + position`. Ver as notas de implementação nos §5, §9 e §21 do `FRACTAL_MATH_ENGINE.md`.
+- **Lente** em coordenadas de tela: `p = W(B(K(G(pixel))))` (buraco negro, caleidoscópio, brush, warp). **Câmera**: `z = p / zoom + position`. Ver as notas de implementação nos §5, §9 e §21 e o §48 do `FRACTAL_MATH_ENGINE.md`. A posição do brush passa pelas etapas anteriores a ele (`lensBeforeBrush`).
+- **Depois da paleta**: anel de fótons (antes do feedback, senão acumula), feedback, horizonte de eventos (depois do feedback, para o buraco engolir os rastros) e arredondamento estocástico.
 - **Mouse**: botão esquerdo arrasta com o Brush em Off e aplica o brush nos outros modos; botão direito sempre arrasta; roda dá zoom. Navegação (`viewNavigation.ts`) e brush (`brushInput.ts`) decidem pelo botão e por `params.brushMode`.
 - Efeitos novos de "lente" (simetria, distorções) entram antes da câmera; efeitos sobre o plano do fractal, depois.
 - **Feedback** (§22–§23): a cor final é misturada com o frame anterior, ampliado e girado em torno do centro da tela. O frame é desenhado em uma de duas texturas RGBA16F (`PingPongBuffers`), copiado para o canvas com `blitFramebuffer` e as texturas trocam de papel. Com Amount 0 o renderer desenha direto no canvas, sem os buffers. O resultado do feedback é arredondado estocasticamente para half float (`stochasticRound()`); não remova, senão imagens antigas nunca terminam de sumir. Ver a nota de implementação do §23.

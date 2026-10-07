@@ -47,7 +47,7 @@ O desenvolvimento acontece em tasks pequenas, uma fase por vez.
 - [x] 6. Feedback temporal — ping-pong framebuffers, amount, zoom e rotation
 - [x] 7. Interação com o mouse — brush com attract, repel e twist
 - [x] 8. Presets — 10 pontos de partida no topo do painel
-- [ ] 8.1 Buraco negro — preset em que as estruturas convergem para o centro numa animação de buraco negro, com horizonte de eventos
+- [x] 8.1 Buraco negro — lente gravitacional, horizonte de eventos, anel de fótons e preset Black Hole
 - [ ] 9. Estado na URL — seed + parâmetros
 - [ ] 10. Exportação PNG
 - [ ] 11. Zoom infinito — zoom profundo além do limite de precisão atual (~2000×), otimizado e eficiente
@@ -73,6 +73,7 @@ Navegadores alvo: Chrome, Edge e Firefox de desktop com WebGL 2.
 ## Uso
 
 - **Arrastar** o canvas move a imagem (botão esquerdo com o Brush em Off; botão direito sempre); a **roda do mouse** dá zoom mantendo fixo o ponto sob o cursor (também com o caleidoscópio ativo).
+- **Black Hole** coloca um buraco negro no centro da tela: **Size** é o raio do horizonte (0 desliga), **Spin** arrasta e faz orbitar o céu em volta e **Glow** controla o anel de fótons. Com feedback de Zoom < 1, as estruturas espiralam para dentro e somem no horizonte (veja o preset **Black Hole**).
 - **Brush** (grupo Interaction): escolha um modo e segure o botão esquerdo sobre o canvas. **Attract** puxa a imagem para o cursor, **Repel** a afasta e **Twist** a gira em torno dele; **Radius** e **Strength** definem o alcance e a intensidade. Com o caleidoscópio, o brush age em todos os setores; com feedback, deixa rastros.
 - **Presets**, no topo do painel, carregam uma configuração completa como ponto de partida; o brush continua como estava.
 - Os sliders do painel mostram e ajustam os mesmos valores. O **Reset** do topo volta tudo à configuração inicial; o **Reset** no título de cada grupo volta só aquele grupo.

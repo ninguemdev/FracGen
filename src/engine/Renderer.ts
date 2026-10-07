@@ -23,6 +23,10 @@ const UNIFORM_NAMES = [
   'uWarpOctaves',
   'uWarpRotation',
   'uWarpPhase',
+  'uBlackHoleSize',
+  'uBlackHoleSpin',
+  'uBlackHolePhase',
+  'uBlackHoleGlow',
   'uBrushMode',
   'uBrushCenter',
   'uBrushRadius',
@@ -107,6 +111,11 @@ export class Renderer {
     gl.uniform1i(uniforms.uWarpOctaves, params.warpOctaves);
     gl.uniform1f(uniforms.uWarpRotation, params.warpRotation);
     gl.uniform1f(uniforms.uWarpPhase, animation.warpPhase);
+
+    gl.uniform1f(uniforms.uBlackHoleSize, params.blackHoleSize);
+    gl.uniform1f(uniforms.uBlackHoleSpin, params.blackHoleSpin);
+    gl.uniform1f(uniforms.uBlackHolePhase, animation.blackHolePhase);
+    gl.uniform1f(uniforms.uBlackHoleGlow, params.blackHoleGlow);
 
     gl.uniform1i(uniforms.uBrushMode, params.brushMode);
     gl.uniform2f(uniforms.uBrushCenter, brush.center[0], brush.center[1]);

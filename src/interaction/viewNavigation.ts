@@ -1,3 +1,4 @@
+import { blackHoleLens } from '../math/blackHole';
 import { brushForce } from '../math/brushForce';
 import { kaleidoscope } from '../math/kaleidoscope';
 import type { Vec2 } from '../math/vec2';
@@ -13,11 +14,19 @@ const PIXELS_PER_LINE = 16;
 
 /** The fractal-plane point shown at view point p — the CPU twin of the shader's mapping. */
 export function fractalPointAt(params: Params, animation: Animation, brush: Brush, p: Vec2): Vec2 {
+  const hole = {
+    size: params.blackHoleSize,
+    spin: params.blackHoleSpin,
+    phase: animation.blackHolePhase,
+  };
   const mirrored = params.symmetryMirror === 1;
-  const folded = kaleidoscope(p, params.symmetrySides, mirrored);
-  const brushed = brushForce(folded, {
+  // The stages ahead of the brush, which its position goes through as well.
+  const lensBeforeBrush = (q: Vec2) =>
+    kaleidoscope(blackHoleLens(q, hole), params.symmetrySides, mirrored);
+
+  const brushed = brushForce(lensBeforeBrush(p), {
     mode: params.brushMode,
-    center: kaleidoscope(brush.center, params.symmetrySides, mirrored),
+    center: lensBeforeBrush(brush.center),
     radius: params.brushRadius,
     strength: params.brushStrength * brush.intensity,
   });

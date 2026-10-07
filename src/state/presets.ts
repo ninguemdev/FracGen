@@ -171,4 +171,20 @@ export const PRESETS: readonly Preset[] = [
       colorFrequency: 0.06,
     },
   },
+  {
+    // The sky orbits and is pulled into the hole by the inward feedback, spiralling past the
+    // photon ring until the horizon swallows it.
+    name: 'Black Hole',
+    params: {
+      blackHoleSize: 0.22,
+      blackHoleSpin: 0.7,
+      blackHoleGlow: 1.2,
+      feedbackAmount: 0.85,
+      feedbackZoom: 0.985,
+      feedbackRotation: 0.012,
+      palette: EMBER,
+      colorPhase: 0.55,
+      colorCycle: 0,
+    },
+  },
 ];

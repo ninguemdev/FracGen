@@ -1565,3 +1565,29 @@ P → paleta procedural
 ```
 
 Essa é a estrutura matemática central recomendada para o projeto.
+
+---
+
+# 48. Buraco negro
+
+Lente gravitacional centrada na tela. É a primeira etapa da lente, antes do caleidoscópio: `p = W(B(K(G(pixel))))`.
+
+**Lente de massa pontual.** Um raio de luz que passa à distância \(r\) de uma massa é desviado por um ângulo \(\propto 1/r\). No plano da imagem, o céu atrás do buraco é visto em
+
+\[
+q=p\left(1-\frac{R_E^2}{|p|^2}\right)
+\]
+
+onde \(R_E\) é o raio do anel de Einstein. O ponto do céu exatamente atrás do buraco se espalha pelo anel \(|p|=R_E\). Fora do anel, o céu aparece empurrado para longe do centro; dentro dele, aparece uma segunda imagem, invertida através do centro. \(R_E=1{,}5\,R_h\), onde \(R_h\) é o raio do horizonte (controle **Size**).
+
+**Arrasto de referencial.** Um buraco negro em rotação arrasta o espaço ao redor. Aproximação: o céu é girado por
+
+\[
+\theta=\varphi(t)+\pi\,a\left(\frac{R_h}{|p|}\right)^2
+\]
+
+onde \(a\in[-1,1]\) é o spin (controle **Spin**, como o \(a/M\) de Kerr) e \(\varphi\) é uma órbita rígida do céu, integrada frame a frame (\(\varphi \mathrel{+}= 0{,}25\,a\,\Delta t\)). A órbita é rígida, e não diferencial (\(\omega\propto r^{-3/2}\)), porque uma rotação diferencial enrolaria as estruturas cada vez mais com o tempo; o enrolamento perto do horizonte vem do termo fixo.
+
+**Horizonte e anel de fótons.** \(|p|<R_h\) é pintado de preto, com borda suavizada, **depois** do feedback: o buraco continua preto e engole os rastros que o feedback com zoom < 1 arrasta em espiral para o centro. É isso que faz as estruturas convergirem. O anel de fótons é um brilho quente somado **antes** do feedback (depois dele, o brilho se acumularia frame a frame), com queda \(e^{-(|p|-R_h)/(0{,}15\,R_h)}\) (controle **Glow**).
+
+É uma aproximação visual de campo fraco: não traça geodésicas, e o anel de fótons não tem as imagens múltiplas de um traçado real. A gêmea na CPU (`src/math/blackHole.ts`) mantém o zoom ancorado no cursor. O preset **Black Hole** combina o buraco com feedback para dentro.

@@ -6,17 +6,23 @@ export interface Animation {
   colorCycleOffset: number;
   /** Warp phase from the warp Animation speed, in radians. */
   warpPhase: number;
+  /** Orbit of the sky around the black hole, from its spin, in radians. */
+  blackHolePhase: number;
 }
 
 export function createAnimation(): Animation {
-  return { colorCycleOffset: 0, warpPhase: 0 };
+  return { colorCycleOffset: 0, warpPhase: 0, blackHolePhase: 0 };
 }
+
+// Orbit speed of the sky around the black hole at spin 1, in radians per second.
+const BLACK_HOLE_ORBIT_SPEED = 0.25;
 
 // Integrating speed × Δt, rather than computing speed × elapsed time, keeps the image from
 // jumping when a speed slider moves.
 export function advanceAnimation(animation: Animation, params: Params, deltaTime: number): void {
   animation.colorCycleOffset += params.colorCycle * deltaTime;
   animation.warpPhase += params.warpSpeed * deltaTime;
+  animation.blackHolePhase += params.blackHoleSpin * BLACK_HOLE_ORBIT_SPEED * deltaTime;
 }
 
 /** The feedback applied in one frame. */

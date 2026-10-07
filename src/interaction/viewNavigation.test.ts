@@ -9,6 +9,7 @@ const plain = (): Params => ({ ...DEFAULT_PARAMS, symmetrySides: 1, warpStrength
 const kaleidoscopic = (): Params => ({ ...plain(), symmetrySides: 6, symmetryMirror: 1 });
 const warped = (): Params => ({ ...kaleidoscopic(), warpStrength: 0.3, warpRotation: 0.8 });
 const twisted = (): Params => ({ ...warped(), brushMode: 3, brushRadius: 0.3, brushStrength: 0.8 });
+const swallowed = (): Params => ({ ...twisted(), blackHoleSize: 0.15, blackHoleSpin: 0.7 });
 
 const noBrush = createBrush();
 // Still fading out after a release, so it acts away from the cursor as well.
@@ -19,9 +20,10 @@ const lenses = [
   ['with a kaleidoscope', kaleidoscopic, noBrush],
   ['with kaleidoscope and warp', warped, noBrush],
   ['with kaleidoscope, warp and brush', twisted, fadingBrush],
+  ['with black hole, kaleidoscope, warp and brush', swallowed, fadingBrush],
 ] as const;
 
-const animation = { ...createAnimation(), warpPhase: 1.3 };
+const animation = { ...createAnimation(), warpPhase: 1.3, blackHolePhase: 0.6 };
 
 const expectClose = (actual: Vec2, expected: Vec2) => {
   expect(actual[0]).toBeCloseTo(expected[0], 10);

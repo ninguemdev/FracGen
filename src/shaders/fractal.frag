@@ -16,6 +16,11 @@ uniform int uWarpOctaves;
 uniform float uWarpRotation;  // amplitude of the rotational warp, in radians
 uniform float uWarpPhase;     // animation phase accumulated from the warp speed
 
+uniform float uBlackHoleSize;  // horizon radius, in view units; 0 turns the black hole off
+uniform float uBlackHoleSpin;  // −1…1, like Kerr's a/M
+uniform float uBlackHolePhase; // orbit of the sky, accumulated from the spin, in radians
+uniform float uBlackHoleGlow;  // photon ring brightness
+
 uniform int uBrushMode;       // 0 off, 1 attract, 2 repel, 3 twist
 uniform vec2 uBrushCenter;    // pointer, in view coordinates
 uniform float uBrushRadius;   // standard deviation of the Gaussian falloff, in view units
@@ -54,6 +59,13 @@ const float BRUSH_ATTRACT_GAIN = 2.0;
 const float BRUSH_REPEL_GAIN = 1.0;
 const float BRUSH_TWIST_ANGLE = 3.14159265359;
 
+// Black hole (FRACTAL_MATH_ENGINE.md §48; the first three must match math/blackHole.ts).
+const float EINSTEIN_RATIO = 1.5;            // Einstein ring radius / horizon radius
+const float FRAME_DRAG_TWIST = 3.14159265359; // turn of the sky at the horizon for spin 1
+const float MIN_RADIUS = 1e-4;               // keeps the centre pixel finite
+const float PHOTON_RING_WIDTH = 0.15;        // glow falloff, relative to the horizon radius
+const vec3 PHOTON_RING_COLOR = vec3(1.0, 0.82, 0.6);
+
 // Smallest normal half float; below it half floats are evenly spaced (subnormals).
 const float HALF_MIN_NORMAL = 1.0 / 16384.0;
 
@@ -80,6 +92,29 @@ vec2 kaleidoscope(vec2 p, float sides, bool mirrored) {
     float angle = mod(atan(p.y, p.x) + 0.5 * sector, sector) - 0.5 * sector;
     if (mirrored) angle = abs(angle);
     return length(p) * vec2(cos(angle), sin(angle));
+}
+
+// Black hole lens (§48). Light passing at distance r from a point mass is bent by an angle
+// ∝ 1/r, so the sky behind is seen at p·(1 − R_E²/r²): its centre spreads into the Einstein
+// ring, and inside the ring the sky shows again, flipped through the centre. Frame dragging
+// then turns the sky near the horizon along with the spin, and the whole sky orbits slowly.
+vec2 blackHoleLens(vec2 p) {
+    float radius = max(length(p), MIN_RADIUS);
+    float einstein = EINSTEIN_RATIO * uBlackHoleSize;
+    vec2 q = p * (1.0 - einstein * einstein / (radius * radius));
+
+    float drag = uBlackHoleSize / radius;
+    float angle = uBlackHolePhase + FRAME_DRAG_TWIST * uBlackHoleSpin * drag * drag;
+    float c = cos(angle);
+    float s = sin(angle);
+    return mat2(c, -s, s, c) * q;
+}
+
+// Lens stages ahead of the brush. The brush position goes through them too, so the brush
+// acts right under the pointer — and, with symmetry, in every kaleidoscope sector at once.
+vec2 lensBeforeBrush(vec2 p) {
+    if (uBlackHoleSize > 0.0) p = blackHoleLens(p);
+    return kaleidoscope(p, uSymmetrySides, uSymmetryMirror);
 }
 
 // Mouse brush (FRACTAL_MATH_ENGINE.md §21): moves points near the brush with a Gaussian
@@ -199,13 +234,10 @@ vec3 stochasticRound(vec3 color) {
 void main() {
     vec2 view = pixelToWorld(gl_FragCoord.xy);
 
-    // Lens, in view space: symmetry and warp stay centred and keep their on-screen size,
-    // while zoom and position slide the fractal underneath them, like turning a kaleidoscope.
-    vec2 p = kaleidoscope(view, uSymmetrySides, uSymmetryMirror);
-    if (uBrushStrength > 0.0) {
-        // Folding the brush position too makes it act in every kaleidoscope sector at once.
-        p = brushForce(p, kaleidoscope(uBrushCenter, uSymmetrySides, uSymmetryMirror));
-    }
+    // Lens, in view space: black hole, symmetry and warp stay centred and keep their on-screen
+    // size, while zoom and position slide the fractal underneath them.
+    vec2 p = lensBeforeBrush(view);
+    if (uBrushStrength > 0.0) p = brushForce(p, lensBeforeBrush(uBrushCenter));
     p = domainWarp(p);
 
     // Camera: picks the region of the fractal plane seen through the lens.
@@ -218,10 +250,26 @@ void main() {
 
     vec3 color = adjustColor(escape < 0.0 ? vec3(0.0) : palette(t, footprint));
 
+    // Photon ring: light skimming the horizon, brightest at its edge. Added before the
+    // feedback; after it, the glow would pile up frame after frame.
+    float radius = length(view);
+    float edge = fwidth(radius);
+    bool blackHole = uBlackHoleSize > 0.0;
+    if (blackHole) {
+        float aboveHorizon = max(radius - uBlackHoleSize, 0.0);
+        vec3 glow = uBlackHoleGlow * PHOTON_RING_COLOR
+            * exp(-aboveHorizon / (PHOTON_RING_WIDTH * uBlackHoleSize));
+        color = min(color + glow, 1.0);
+    }
+
     // Temporal feedback (§22): blending the finished colors, rather than escape values before
     // the palette, lets trails keep the palette phase they were drawn with.
-    if (uFeedbackAmount > 0.0) {
-        color = stochasticRound(mix(color, previousFrame(view), uFeedbackAmount));
-    }
+    if (uFeedbackAmount > 0.0) color = mix(color, previousFrame(view), uFeedbackAmount);
+
+    // Event horizon, after the feedback: the hole stays black and swallows the trails that
+    // spiral into it.
+    if (blackHole) color *= smoothstep(uBlackHoleSize - edge, uBlackHoleSize + edge, radius);
+
+    if (uFeedbackAmount > 0.0) color = stochasticRound(color);
     outColor = vec4(color, 1.0);
 }

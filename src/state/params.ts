@@ -27,6 +27,13 @@ export interface Params {
   /** Warp animation speed, in radians per second. */
   warpSpeed: number;
 
+  /** Horizon radius of the black hole at the centre of the view, in view units; 0 turns it off. */
+  blackHoleSize: number;
+  /** −1…1, like Kerr's a/M: drags the sky around the hole and sets it orbiting. */
+  blackHoleSpin: number;
+  /** Brightness of the photon ring around the horizon. */
+  blackHoleGlow: number;
+
   // Feedback values are per frame at 60 fps; they get scaled to the real frame time.
   /** Share of the previous frame blended under each new one; 0 turns feedback off. */
   feedbackAmount: number;
@@ -92,6 +99,10 @@ export const PARAM_SPECS: Record<ParamKey, ParamSpec> = {
   warpRotation: { label: 'Rotation', min: -3, max: 3, step: 0.01 },
   warpSpeed: { label: 'Animation', min: -3, max: 3, step: 0.01 },
 
+  blackHoleSize: { label: 'Size', min: 0, max: 0.6, step: 0.005 },
+  blackHoleSpin: { label: 'Spin', min: -1, max: 1, step: 0.01 },
+  blackHoleGlow: { label: 'Glow', min: 0, max: 2, step: 0.01 },
+
   feedbackAmount: { label: 'Amount', min: 0, max: 0.99, step: 0.01 },
   feedbackZoom: { label: 'Zoom', min: 0.96, max: 1.04, step: 0.001 },
   feedbackRotation: { label: 'Rotation', min: -0.03, max: 0.03, step: 0.0005 },
@@ -132,6 +143,11 @@ export const DEFAULT_PARAMS: Readonly<Params> = {
   warpOctaves: 3,
   warpRotation: 0,
   warpSpeed: 0.5,
+
+  // Off by default; spin and glow are set so that raising Size alone already shows a live hole.
+  blackHoleSize: 0,
+  blackHoleSpin: 0.5,
+  blackHoleGlow: 1,
 
   // Off by default; zoom and rotation are set so that raising Amount alone already spirals.
   feedbackAmount: 0,
